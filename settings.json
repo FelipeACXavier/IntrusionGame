@@ -1,0 +1,6 @@
+{
+  "iterations": 1,
+  "level": "levels/level_1.json",
+
+  "log_debug": false
+}
