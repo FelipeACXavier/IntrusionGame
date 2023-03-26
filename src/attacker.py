@@ -8,11 +8,13 @@ class Attacker(Entity):
   def __init__(self, config, doors, done_callback):
     random.seed()
 
-    pos = pygame.math.Vector2(config["x"], config["y"])
+    x = config["x"] + random.randint(0, config["randomization"])
+    y = config["y"] + random.randint(0, config["randomization"])
+
     behaviour = config["behaviour"]
     strategy = config["strategy"]
 
-    super().__init__(pos, (10, 73, 200))
+    super().__init__(pygame.math.Vector2(x, y), (10, 73, 200))
 
     if behaviour != "jump" and behaviour != "walk":
       raise Exception("Attacker behaviour {} is not valid".format(behaviour))
@@ -24,23 +26,29 @@ class Attacker(Entity):
     self.doors = doors
 
     self.behaviour = behaviour
-    self.staying = False
+    self.staying = True
     self.can_attack = False
     self.strategy = strategy
 
-    self.stay_speed = 5 * settings.TILE_SIZE
+    self.initial_pos = pygame.math.Vector2(x, y)
+    self.successes = 0
+    self.failures = 0
 
-    self.stay_period = config["stay_period"] * 60
+    self.speed = 0.5 * settings.TILE_SIZE
+
+    self.stay_period = int(config["stay_period"] * 60)
     self.attack_period = config["attack_period"] * 60
-    self.stay_time = 0
+    self.stay_time = self.stay_period
     self.wait_time = self.attack_period
 
     self.done_callback = done_callback
     if settings.DEBUG:
-      print("Created attacker at ({}, {}) waiting {} minutes".format(pos.x, pos.y, self.wait_time / 60))
+      print("Created attacker at {} waiting {} minutes".format(self.pos, self.wait_time / 60))
 
   def start_check(self):
-    print("Attacker was caught")
+    if settings.DEBUG:
+      print("Attacker was caught")
+
     if self.done_callback:
       self.done_callback(False)
 
@@ -62,6 +70,21 @@ class Attacker(Entity):
           self.pos.y = settings.HEIGHT - settings.HALF_TILE
       elif self.pos.y < 0:
           self.pos.y = settings.HALF_TILE
+
+  def result(self):
+    return {"success": self.successes, "failure": self.failures }
+
+  def reset_pos(self):
+    self.pos.x = self.initial_pos.x
+    self.pos.y = self.initial_pos.y
+    self.constrain(self.speed)
+
+    self.door = None
+    self.staying = True
+
+    # Wait for next attempt in a few minutes
+    self.wait_time = self.attack_period
+    self.can_attack = False
 
   def move(self, speed):
     # Count time until we try to attack
@@ -98,25 +121,30 @@ class Attacker(Entity):
           raise Exception("Unknown attacker behaviour")
       else:
         if self.door.is_open() and self.door.to_next_level():
-          print("Door open, attack succeeded")
-          if self.done_callback:
+          # For a p test, we only increment the number of successful attempts
+          if self.strategy == "p-test":
+            self.successes += 1
+            self.reset_pos()
+          elif self.done_callback:
             self.done_callback(True)
 
         else:
           if settings.DEBUG:
             print("Door is closed, trying again in {} seconds".format(self.attack_period))
+
+          if self.strategy == "p-test":
+            self.failures += 1
+            self.reset_pos()
+
           self.door = None
           self.staying = True
-
-          if self.strategy == "p-test" and self.done_callback:
-            self.done_callback(False)
 
           # Wait for next attempt in a few minutes
           self.wait_time = self.attack_period
           self.can_attack = False
 
     else:
-      super().move(self.stay_speed)
+      super().move(self.speed)
 
     # Stays in location for some time
     if self.staying:

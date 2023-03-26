@@ -27,14 +27,20 @@ class Entity:
     def is_being_checked(self):
       return self.is_checking
 
-    def adjust_pos(self, x, y):
-      if self.pos.x + x > settings.WIDTH or self.pos.x + x < 0:
-        x = -x
-      if self.pos.y + y >settings. HEIGHT or self.pos.y + y < 0:
-        y = -y
+    def adjust_pos(self, speed = None):
+      self.direction.x = random.randint(-1, 1)
+      self.direction.y = random.randint(-1, 1)
+
+      if speed == None:
+        speed = 1.2 * self.speed
+
+      x = (self.direction.x * speed)
+      y = (self.direction.y * speed)
 
       self.pos.x += x
       self.pos.y += y
+
+      self.constrain(speed)
 
     def constrain(self, speed):
       if self.pos.x > settings.WIDTH or self.pos.x < 0:
@@ -55,8 +61,6 @@ class Entity:
 
       self.constrain(speed)
 
-      # print("Moving to ({}, {})".format(self.pos.x, self.pos.y))
-
     def update(self):
       self.move(self.speed)
-      pygame.draw.circle(self.surface, self.color, self.pos, settings.HALF_TILE)
+      pygame.draw.circle(self.surface, self.color, self.pos, settings.HALF_TILE * 0.5)

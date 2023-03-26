@@ -1,5 +1,5 @@
 {
-  "level": "Level 1.1 p-test",
+  "level": "Level 1.2 p-test",
   "log_debug": false,
 
   "fps": 500,
@@ -8,7 +8,7 @@
 
   "tile_size": 32,
   "width": 10,
-  "height": 8.5,
+  "height": 13.5,
   "day_duration": 8,
 
   "test_type": "p-test",

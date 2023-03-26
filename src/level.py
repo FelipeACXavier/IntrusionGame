@@ -29,8 +29,8 @@ class Level:
 
     def create_employees(self, config):
        for index in range(config["number_of_employees"]):
-          x = settings.WIDTH / 2 + random.randint(0, config["randomization"])
-          y = settings.HEIGHT / 2 + random.randint(0, config["randomization"])
+          x = settings.WIDTH / 2 + random.randint(-config["randomization"], config["randomization"])
+          y = settings.HEIGHT / 2 + random.randint(-config["randomization"], config["randomization"])
 
           self.employees.append(Employee(index, pygame.math.Vector2(x, y), config))
 
@@ -41,6 +41,9 @@ class Level:
     def create_guards(self, config, day_duration):
       for index, guard in enumerate(config):
           self.guards.append(Guard(index, guard, day_duration, self.employees + [self.attacker]))
+
+    def result(self):
+       return self.attacker.result()
 
     def run(self):
       for e in self.employees:

@@ -1,0 +1,13 @@
+{
+  "wins": 20,
+  "losses": 0,
+  "avg_win_time": 480.0,
+  "avg_loss_time": 0.0,
+  "p-value": 0.5689655172413793,
+  "successes": 990,
+  "failures": 750,
+  "q-value": 0,
+  "sojurn_time": 20.0,
+  "iterations": 20,
+  "type": "p-test"
+}

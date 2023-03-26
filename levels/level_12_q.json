@@ -1,5 +1,5 @@
 {
-  "level": "Level 1.1 q-test",
+  "level": "Level 1.2 q-test",
   "log_debug": false,
 
   "fps": 500,
@@ -8,7 +8,7 @@
 
   "tile_size": 32,
   "width": 10,
-  "height": 8.5,
+  "height": 13.5,
   "day_duration": 8,
 
   "test_type": "q-test",
@@ -23,12 +23,21 @@
     "strategy": "q-test"
   },
   "employees": {
-    "number_of_employees": 22,
+    "number_of_employees": 34,
     "max_stay_time": 60,
     "min_stay_time": 10,
     "randomization": 64
   },
   "guards": [
+    {
+      "randomization": 0,
+      "check_radius": 2.5,
+      "max_check_time": 3,
+      "min_check_time": 1,
+      "number_of_missions": 5,
+      "max_mission_time": 15,
+      "min_mission_time": 5
+    },
     {
       "randomization": 0,
       "check_radius": 2.5,

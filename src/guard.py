@@ -10,13 +10,15 @@ class Guard(Entity):
   def __init__(self, id, config, day_duration, entities):
     random.seed()
 
-    x = settings.WIDTH / 2 + random.randint(0, config["randomization"])
-    y = settings.HEIGHT / 2 + random.randint(0, config["randomization"])
+    x = settings.WIDTH - random.randint(0, config["randomization"])
+    y = settings.HEIGHT / 2 - random.randint(0, config["randomization"])
 
     super().__init__(pygame.math.Vector2(x, y), (255, 0, 0))
 
     if settings.DEBUG:
       print("Created guard at ({}, {})".format(self.pos.x, self.pos.y))
+
+    self.initial_pos = pygame.math.Vector2(x, y)
 
     self.name = id
     self.check_time = 0
@@ -28,15 +30,17 @@ class Guard(Entity):
     duration_in_ticks = day_duration * 60 * 60
 
     self.mission = 0
-    self.wait_for_mission = 0
-    self.mission_time = 0
     self.in_mission = False
     self.mission_period = duration_in_ticks / config["number_of_missions"]
     self.max_mission_time = config["max_mission_time"] * 60
     self.min_mission_time = config["min_mission_time"] * 60
 
+    self.wait_for_mission = random.uniform(0, self.mission_period)
+
     self.entities = entities
     self.checking_entity = None
+
+    self.speed = 0.5 * settings.TILE_SIZE
 
   def perform_check(self):
     if self.checking_entity != None:
@@ -68,6 +72,12 @@ class Guard(Entity):
     if self.in_mission:
       self.in_mission = False
       self.wait_for_mission = self.mission_period
+      self.reset_pos()
+
+  def reset_pos(self):
+    self.pos.x = self.initial_pos.x
+    self.pos.y = self.initial_pos.y
+    self.constrain(self.speed)
 
   def move(self, speed):
     if self.wait_for_mission > 0:

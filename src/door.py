@@ -12,10 +12,13 @@ class Door:
     if door_type != "intra_level" and door_type != "inter_level":
       raise Exception("Door type {} is not valid".format(door_type))
 
+    x = config["x"] * settings.WIDTH
+    y = config["y"] * settings.HEIGHT
+
     self.open = False
+    self.name = id
     self.type = door_type
-    self.pos = pygame.math.Vector2(config["x"], config["y"])
-    self.identifier = id
+    self.pos = pygame.math.Vector2(x, y)
     self.surface = pygame.display.get_surface()
 
     [w, h, self.area] = self.create_area(config["direction"])
@@ -24,15 +27,17 @@ class Door:
 
     self.short_opening = config["short_opening_probability"]
     self.max_open_duration = config["max_open_time"] * 60
-    self.max_close_duration = config["max_close_time"] * 60
-    self.inter_duration = (3 * config["inter_opening_time"]) * 60 - self.max_close_duration
+    self.min_open_duration = config["min_open_time"] * 60
+    self.max_short_open_time = config["max_short_open_time"] * 60
+    self.min_short_open_time = config["min_short_open_time"] * 60
+    self.inter_duration = (3 * config["inter_opening_time"]) * 60 - self.max_open_duration
 
-    self.state_time = random.triangular(0, self.max_close_duration, self.inter_duration)
+    self.state_time = random.triangular(0, self.max_open_duration, self.inter_duration)
     if settings.DEBUG:
       print("Starting door {} closed for {:.4} minutes".format(self.id(), self.state_time / 60))
 
   def id(self):
-    return self.identifier
+    return self.name
 
   def x(self):
     return self.area.x + settings.HALF_TILE
@@ -94,7 +99,7 @@ class Door:
           self.state_time -= 1
           return
 
-      self.state_time = random.triangular(0, self.max_close_duration, self.inter_duration)
+      self.state_time = random.triangular(0, self.max_open_duration, self.inter_duration)
       if settings.DEBUG:
         print("Closing door for {:.4} minutes".format(self.state_time / 60))
       self.open = False
@@ -108,9 +113,9 @@ class Door:
 
       # Check if the door should open for a short or long time
       if is_short_open:
-        self.state_time = random.uniform(30, 90)
+        self.state_time = random.uniform(self.min_short_open_time, self.max_short_open_time)
       else:
-        self.state_time = random.uniform(90, self.max_open_duration)
+        self.state_time = random.uniform(self.min_open_duration, self.max_open_duration)
 
       if settings.DEBUG:
         print("Opening door for {:.4} minutes".format(self.state_time / 60))
