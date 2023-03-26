@@ -1,0 +1,38 @@
+{
+  "level": "Level 1.1 q-test",
+  "iterations": 3,
+  "log_debug": false,
+
+  "fps": 900,
+  "tile_size": 32,
+  "width": 320,
+  "height": 272,
+  "day_duration": 8,
+
+  "attacker": {
+    "x": 10,
+    "y": 10,
+    "attack_period": 5,
+    "stay_period": 0.5,
+    "behaviour": "jump",
+    "strategy": "q-test"
+  },
+  "employees": {
+    "number_of_employees": 22,
+    "max_stay_time": 10,
+    "min_stay_time": 1,
+    "randomization": 32
+  },
+  "guards": [
+    {
+      "randomization": 16,
+      "check_radius": 2.5,
+      "max_check_time": 3,
+      "min_check_time": 1,
+      "number_of_missions": 5,
+      "max_mission_time": 15,
+      "min_mission_time": 5
+    }
+  ],
+  "doors": []
+}

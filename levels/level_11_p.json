@@ -1,0 +1,39 @@
+{
+  "level": "Level 1.1 p-test",
+  "iterations": 100,
+  "log_debug": false,
+
+  "fps": 900,
+  "tile_size": 32,
+  "width": 320,
+  "height": 272,
+  "day_duration": 8,
+
+  "attacker": {
+    "x": 10,
+    "y": 10,
+    "attack_period": 5,
+    "stay_period": 0.5,
+    "behaviour": "jump",
+    "strategy": "p-test"
+  },
+  "employees": {
+    "number_of_employees": 0,
+    "max_stay_time": 10,
+    "min_stay_time": 1,
+    "randomization": 32
+  },
+  "guards": [],
+  "doors": [
+    {
+      "x": 320,
+      "y": 146,
+      "type": "inter_level",
+      "direction": "right",
+      "inter_opening_time": 5,
+      "short_opening_probability": 0.5,
+      "max_open_time": 13,
+      "max_close_time": 10
+    }
+  ]
+}

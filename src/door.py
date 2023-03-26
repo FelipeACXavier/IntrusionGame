@@ -1,0 +1,123 @@
+import pygame
+import random
+import settings
+
+DOOR_SIZE = 2
+
+class Door:
+  def __init__(self, id, config):
+    random.seed()
+
+    door_type = config["type"]
+    if door_type != "intra_level" and door_type != "inter_level":
+      raise Exception("Door type {} is not valid".format(door_type))
+
+    self.open = False
+    self.type = door_type
+    self.pos = pygame.math.Vector2(config["x"], config["y"])
+    self.identifier = id
+    self.surface = pygame.display.get_surface()
+
+    [w, h, self.area] = self.create_area(config["direction"])
+
+    self.rect = pygame.Rect(self.pos.x , self.pos.y, w, h)
+
+    self.short_opening = config["short_opening_probability"]
+    self.max_open_duration = config["max_open_time"] * 60
+    self.max_close_duration = config["max_close_time"] * 60
+    self.inter_duration = (3 * config["inter_opening_time"]) * 60 - self.max_close_duration
+
+    self.state_time = random.triangular(0, self.max_close_duration, self.inter_duration)
+    if settings.DEBUG:
+      print("Starting door {} closed for {:.4} minutes".format(self.id(), self.state_time / 60))
+
+  def id(self):
+    return self.identifier
+
+  def x(self):
+    return self.area.x + settings.HALF_TILE
+
+  def y(self):
+    return self.area.y + settings.HALF_TILE
+
+  def is_open(self):
+    return self.open
+
+  def to_next_level(self):
+    return self.type == "inter_level"
+
+  def create_area(self, direction):
+    w = 0
+    h = 0
+    area_x = 0
+    area_y = 0
+
+    if direction == "up":
+      w = settings.TILE_SIZE
+      h = DOOR_SIZE
+      self.pos.x = self.pos.x - w / 2
+      self.pos.y = self.pos.y
+      area_x = self.pos.x
+      area_y = self.pos.y + h
+    elif direction == "down":
+      w = settings.TILE_SIZE
+      h = DOOR_SIZE
+      self.pos.x = self.pos.x - w / 2
+      self.pos.y = self.pos.y - h
+      area_x = self.pos.x
+      area_y = self.pos.y - settings.TILE_SIZE
+    elif direction == "left":
+      w = DOOR_SIZE
+      h = settings.TILE_SIZE
+      self.pos.x = self.pos.x
+      self.pos.y = self.pos.y - h / 2
+      area_x = self.pos.x + w
+      area_y = self.pos.y
+    elif direction == "right":
+      w = DOOR_SIZE
+      h = settings.TILE_SIZE
+      self.pos.x = self.pos.x - w
+      self.pos.y = self.pos.y - h / 2
+      area_x = self.pos.x - settings.TILE_SIZE
+      area_y = self.pos.y
+    else:
+       raise Exception("Invalid argument: {}".format(direction))
+
+    area = pygame.Rect(area_x , area_y, settings.TILE_SIZE, settings.TILE_SIZE)
+
+    return [w, h, area]
+
+  def react(self):
+    if self.open:
+      # Check how long the door has been open
+      if self.state_time > 0:
+          self.state_time -= 1
+          return
+
+      self.state_time = random.triangular(0, self.max_close_duration, self.inter_duration)
+      if settings.DEBUG:
+        print("Closing door for {:.4} minutes".format(self.state_time / 60))
+      self.open = False
+    else:
+      # Check how long the door has been close
+      if self.state_time > 0:
+          self.state_time -= 1
+          return
+
+      is_short_open = (random.uniform(0, 1) <= self.short_opening)
+
+      # Check if the door should open for a short or long time
+      if is_short_open:
+        self.state_time = random.uniform(30, 90)
+      else:
+        self.state_time = random.uniform(90, self.max_open_duration)
+
+      if settings.DEBUG:
+        print("Opening door for {:.4} minutes".format(self.state_time / 60))
+
+      self.open = True
+
+  def update(self):
+    self.react()
+    pygame.draw.rect(self.surface, (0, 255, 0) if self.open else (255, 0, 0), self.rect)
+    pygame.draw.rect(self.surface, (0, 100, 0) if self.open else (100, 0, 0), self.area)
