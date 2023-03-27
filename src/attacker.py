@@ -149,5 +149,3 @@ class Attacker(Entity):
     # Stays in location for some time
     if self.staying:
       self.stay_time = self.stay_period
-      if settings.DEBUG:
-        print("Moved, now staying for {} minutes".format(self.stay_time / 60))

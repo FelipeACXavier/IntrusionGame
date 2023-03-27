@@ -26,13 +26,13 @@ class Door:
     self.rect = pygame.Rect(self.pos.x , self.pos.y, w, h)
 
     self.short_opening = config["short_opening_probability"]
+    self.inter_duration = config["inter_opening_time"] * 60
     self.max_open_duration = config["max_open_time"] * 60
     self.min_open_duration = config["min_open_time"] * 60
     self.max_short_open_time = config["max_short_open_time"] * 60
     self.min_short_open_time = config["min_short_open_time"] * 60
-    self.inter_duration = (3 * config["inter_opening_time"]) * 60 - self.max_open_duration
 
-    self.state_time = random.triangular(0, self.max_open_duration, self.inter_duration)
+    self.state_time = random.gauss(mu=self.inter_duration, sigma=60)
     if settings.DEBUG:
       print("Starting door {} closed for {:.4} minutes".format(self.id(), self.state_time / 60))
 
@@ -99,19 +99,18 @@ class Door:
           self.state_time -= 1
           return
 
-      self.state_time = random.triangular(0, self.max_open_duration, self.inter_duration)
+      self.state_time = random.gauss(mu=self.inter_duration, sigma=60)
       if settings.DEBUG:
         print("Closing door for {:.4} minutes".format(self.state_time / 60))
       self.open = False
     else:
-      # Check how long the door has been close
+      # Check how long the door has been closed
       if self.state_time > 0:
           self.state_time -= 1
           return
 
-      is_short_open = (random.uniform(0, 1) <= self.short_opening)
-
       # Check if the door should open for a short or long time
+      is_short_open = (random.uniform(0, 1) < self.short_opening)
       if is_short_open:
         self.state_time = random.uniform(self.min_short_open_time, self.max_short_open_time)
       else:

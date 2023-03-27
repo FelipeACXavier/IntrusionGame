@@ -6,6 +6,14 @@ from entity import Entity
 
 class Employee(Entity):
     def __init__(self, id, pos, config):
+        random.seed()
+
+        behaviour = config["behaviour"]
+        if behaviour != "stay" and behaviour != "walk":
+          raise Exception("Attacker behaviour {} is not valid".format(behaviour))
+
+        pos.x = random.randint(0, settings.WIDTH)
+        pos.y = random.randint(0, settings.HEIGHT)
         super().__init__(pos, (117, random.randint(100, 200), random.randint(0, 50)))
 
         self.name = id
@@ -13,15 +21,17 @@ class Employee(Entity):
         self.min_stay_time = config["min_stay_time"]
 
         self.stay_time = 0
-        self.speed = 2 * settings.TILE_SIZE
+        self.behaviour = behaviour
+        self.speed = config["speed"] * settings.TILE_SIZE
         if settings.DEBUG:
             print("Created employee at ({}, {})".format(pos.x, pos.y))
 
-    def stop_check(self, check_radius):
+    def stop_check(self, check_radius = None):
         super().stop_check()
         # Move away from the guard check radius
-        self.adjust_pos(check_radius)
-        self.stay_time = 0
+        if self.behaviour == "walk":
+            self.adjust_pos(check_radius)
+        # self.stay_time = 0
 
     def constrain(self, speed):
         if self.pos.x >= settings.WIDTH:

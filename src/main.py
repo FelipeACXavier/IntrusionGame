@@ -9,9 +9,21 @@ from sys import exit
 from level import Level
 from screeninfo import get_monitors
 
+parser = argparse.ArgumentParser(
+                    prog='IntrusionGame',
+                    description="""Simulates a specified intrusion game based on the \"Physical Intrusion
+                                   Games—Optimizing Surveillance by Simulation and Game Theory\" paper""",
+                    epilog='For research purposes only')
+
+parser.add_argument('-c','--config', dest="config", help="Specify the simulation config")
+parser.add_argument('-d','--directory', dest="directory", help="Run all configs in directory")
+parser.add_argument('-i','--iterations', dest="iterations", help="Overwrite config iterations")
+parser.add_argument('-f','--fps', dest="fps", help="Overwrite config fps")
+parser.add_argument('-w','--cycles', dest="cycles", help="Overwrite config cycles per frame")
+parser.add_argument('-r','--runs', dest="runs", default=1, help="How many runs to average over")
 
 class Game:
-    def __init__(self, id, config_file, wins, losses, win_time, loss_time):
+    def __init__(self, id, config_file, stats):
         pygame.init()
 
         self.name= str()
@@ -25,10 +37,10 @@ class Game:
         pygame.display.set_caption("Intrusion game")
 
         self.id = id
-        self.wins = wins
-        self.losses = losses
-        self.win_time = win_time
-        self.loss_time = loss_time
+        self.wins = stats.wins
+        self.losses = stats.losses
+        self.win_time = stats.avg_win_time
+        self.loss_time = stats.avg_loss_time
 
         self.successes = 0
         self.time_taken = 0
@@ -48,7 +60,6 @@ class Game:
             settings.TILE_SIZE = data["tile_size"]
             settings.HALF_TILE = settings.TILE_SIZE / 2
 
-            settings.FPS = data["fps"]
             settings.WIDTH = data["width"] * settings.TILE_SIZE
             settings.HEIGHT = data["height"] * settings.TILE_SIZE
 
@@ -104,6 +115,7 @@ class Game:
 
     def run(self):
         while self.run_game:
+            self.screen.fill('Black')
             for i in range(settings.CYCLES_PER_FRAME):
                 if self.is_day_done():
                     self.game_finished(True)
@@ -121,7 +133,6 @@ class Game:
                     return
 
                 # Draw all elements
-                self.screen.fill('Black')
                 self.level.run()
                 self.time_taken += 1
 
@@ -131,105 +142,141 @@ class Game:
 
         pygame.quit()
 
-parser = argparse.ArgumentParser(
-                    prog='IntrusionGame',
-                    description="""Simulates a specified intrusion game based on the \"Physical Intrusion
-                                   Games—Optimizing Surveillance by Simulation and Game Theory\" paper""",
-                    epilog='For research purposes only')
+class SimulationStats:
+    def __init__(self, test_type, iterations):
+        self.wins = 0
+        self.losses = 0
 
-parser.add_argument('-c','--config', dest="config", help="Specify the simulation config")
-parser.add_argument('-l','--level', dest="level", help="Specify the simulation levels")
+        self.iterations = iterations
 
-if __name__ == "__main__":
-    wins = 0
-    win_time = 0
-    avg_win_time = 0
-    losses = 0
-    loss_time = 0
-    avg_loss_time = 0
-    proportion = 0
+        self.successes = 0
+        self.failures = 0
+        self.sojurn_time = 0
+        self.test_type = test_type
 
-    successes = 0
-    failures = 0
+        self.win_time = 0
+        self.loss_time = 0
+        self.avg_win_time = 0
+        self.avg_loss_time = 0
 
-    sojurn_time = 0
-    day_multiplier = 0
+        self.start = time.time()
+
+    def update_result(self, result, iteration):
+        if result[0]:
+            self.wins += 1
+            self.win_time += result[1]
+        else:
+            self.losses += 1
+            self.loss_time += result[1]
+
+        self.successes += result[2]["success"]
+        self.failures += result[2]["failure"]
+
+        self.sojurn_time += (result[1] / settings.DAY_LENGTH)
+        self.avg_win_time = self.win_time / (iteration + 1)
+        self.avg_loss_time = self.loss_time / (iteration + 1)
+
+        if self.test_type == "p-test":
+            print("Attempt {} has p={:.4f}".format(iteration, self.p_value()))
+        elif self.test_type == "q-test":
+            print("Attempt {} has q={:.4f}".format(iteration, self.q_value(iteration + 1)))
+
+    def done(self):
+        end = time.time()
+        print("Done running for {:.4f} seconds".format(end - self.start))
+        self.dump()
+
+    def dump(self):
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print("Done with {} iterations".format(self.iterations))
+        print("The attacker won {} games and lost {}".format(self.wins, self.losses))
+        print("Average win time {:.4f} minutes".format(self.avg_win_time))
+        print("Average loss time {:.4f} minutes".format(self.avg_loss_time))
+        print("Calculated p value = {:.6f}".format(self.p_value()))
+        print("Calculated q value = {:.6f}".format(self.q_value(self.iterations)))
+        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
+    def p_value(self):
+        if self.successes == 0 and self.failures == 0:
+            return 0
+
+        return self.successes / (self.successes + self.failures)
+
+    def q_value(self, iteration):
+        return self.sojurn_time / iteration
+
+    def save(self, file):
+        print("Saving results to " + file)
+        results = {
+            "wins": self.wins,
+            "losses": self.losses,
+            "avg_win_time": self.avg_win_time,
+            "avg_loss_time": self.avg_loss_time,
+            "p-value": self.p_value(),
+            "successes": self.successes,
+            "failures": self.failures,
+            "q-value": self.q_value(self.iterations),
+            "sojurn_time": self.sojurn_time,
+            "iterations": self.iterations,
+            "test_type": self.test_type
+        }
+
+        with open(file, "w") as f:
+            json.dump(results, f, indent=2)
+
+def run_simulation(config_file, runs=None, fps=None, cycles=None):
+    print("Running with file: {}".format(config_file))
+
     test_type = str()
     iterations = int()
-
-    p = 0
-    q = 0
-
-    args = parser.parse_args()
-    if args.config == None:
-        print("No configuration file provided")
-
-    with open(args.config, 'r') as config:
+    with open(config_file, 'r') as config:
         data = json.load(config)
         test_type = data["test_type"]
-        iterations = data["iterations"]
-        day_multiplier = data["day_duration"] * 60
+        iterations = data["iterations"] if runs == None else int(runs)
+
+        settings.FPS = data["fps"] if fps == None else int(fps)
         settings.DEBUG = data["log_debug"]
-        settings.CYCLES_PER_FRAME = data["cycles_per_frame"]
+        settings.DAY_LENGTH = data["day_duration"] * 60
+        settings.CYCLES_PER_FRAME = data["cycles_per_frame"] if cycles == None else int(cycles)
 
-    start = time.time()
+    stats = SimulationStats(test_type, iterations)
     for i in range(iterations):
-        game = Game(i, args.config, wins, losses, avg_win_time, avg_loss_time)
+        game = Game(i, config_file, stats)
         game.run()
-        result = game.result()
-        if result[0]:
-            wins += 1
-            win_time += result[1]
-        else:
-            losses += 1
-            loss_time += result[1]
 
-        successes += result[2]["success"]
-        failures += result[2]["failure"]
-
-        sojurn_time += (result[1] / day_multiplier)
-        avg_win_time = win_time / (i + 1)
-        avg_loss_time = loss_time / (i + 1)
-
-        if test_type == "p-test":
-            print("Attempt {} had {} successes and {} failures. P={:.4f}".format(i, result[2]["success"], result[2]["failure"], successes / (successes + failures)))
-        elif test_type == "q-test":
-            print("Attempt {} had {:.4f} time".format(i, sojurn_time / (i + 1)))
+        stats.update_result(game.result(), i)
 
         if game.is_stopped():
             break
 
+    stats.done()
+    stats.save("results/{}".format(os.path.basename(config_file)))
 
-    print("After {} iterations, the attacker won {} games and lost {}".format(iterations, wins, losses))
-    print("The time to win was {:.4f} and to lose {:.4f} minutes".format(avg_win_time, avg_loss_time))
+    return stats.p_value(), stats.q_value(iterations)
 
-    end = time.time()
-    print("Done running for {:.4f} seconds".format(end - start))
+if __name__ == "__main__":
+    args = parser.parse_args()
 
-    if test_type == "p-test":
-        p = successes / (successes + failures)
-    elif test_type == "q-test":
-        q = sojurn_time / iterations
+    p = 0
+    q = 0
+    runs = int(args.runs)
 
-    print("Calculated p value = {:.6f}".format(p))
-    print("Calculated q value = {:.6f}".format(q))
+    if args.config != None:
+        for i in range(runs):
+            pi, qi = run_simulation(args.config, runs=args.iterations, fps=args.fps, cycles=args.cycles)
+            p += pi
+            q += qi
 
-    results = {
-        "wins": wins,
-        "losses": losses,
-        "avg_win_time": avg_win_time,
-        "avg_loss_time": avg_loss_time,
-        "p-value": p,
-        "successes": successes,
-        "failures": failures,
-        "q-value": q,
-        "sojurn_time": sojurn_time,
-        "iterations": iterations,
-        "type": test_type,
-    }
+    elif args.directory != None:
+        for filename in os.listdir(args.directory):
+            config_file = os.path.join(args.directory, filename)
+            # Checking if it is a file
+            if not os.path.isfile(config_file):
+                continue
 
-    outfile = "results/{}".format(os.path.basename(args.config))
-    with open(outfile, "w") as f:
-        json.dump(results, f, indent=2)
+            run_simulation(config_file, runs=args.iterations, fps=args.fps, cycles=args.cycles)
+    else:
+        print("No configuration file provided")
 
+    print("p={:.6f}, q={:6f}".format(p / runs, q / runs))
     exit()
