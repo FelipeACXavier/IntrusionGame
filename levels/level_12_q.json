@@ -2,9 +2,9 @@
   "level": "Level 1.2 q-test",
   "log_debug": false,
 
-  "fps": 500,
+  "fps": 200,
   "iterations": 100,
-  "cycles_per_frame": 200,
+  "cycles_per_frame": 500,
 
   "tile_size": 32,
   "width": 10,
@@ -16,7 +16,7 @@
   "attacker": {
     "x": 10,
     "y": 10,
-    "randomization": 32,
+    "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
     "behaviour": "jump",
@@ -26,27 +26,25 @@
     "number_of_employees": 34,
     "max_stay_time": 60,
     "min_stay_time": 10,
-    "randomization": 64
+    "randomization": 128,
+    "behaviour": "stay",
+    "speed": 1.5
   },
-  "guards": [
-    {
-      "randomization": 0,
-      "check_radius": 2.5,
-      "max_check_time": 3,
-      "min_check_time": 1,
-      "number_of_missions": 5,
-      "max_mission_time": 15,
-      "min_mission_time": 5
-    },
-    {
-      "randomization": 0,
-      "check_radius": 2.5,
-      "max_check_time": 3,
-      "min_check_time": 1,
-      "number_of_missions": 5,
-      "max_mission_time": 15,
-      "min_mission_time": 5
-    }
-  ],
+  "guards": {
+    "number_of_guards": 2,
+    "config": [
+      {
+        "randomization": 128,
+        "check_radius": 2.5,
+        "max_check_time": 3,
+        "min_check_time": 1,
+        "number_of_missions": 5,
+        "max_mission_time": 15,
+        "min_mission_time": 5,
+        "behaviour": "stroll",
+        "stroll_speed": 0.1
+      }
+    ]
+  },
   "doors": []
 }

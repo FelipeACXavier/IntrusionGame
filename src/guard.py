@@ -10,13 +10,15 @@ class Guard(Entity):
   def __init__(self, id, config, day_duration, entities):
     random.seed()
 
-    x = settings.WIDTH - random.randint(0, config["randomization"])
-    y = settings.HEIGHT / 2 - random.randint(0, config["randomization"])
+    attacker = entities[-1]
+    x = random.randint(0, settings.WIDTH)
+    y = random.randint(0, settings.HEIGHT)
+
+    behaviour = config["behaviour"]
+    if behaviour != "reset" and behaviour != "stroll":
+      raise Exception("Guard behaviour {} is not valid".format(behaviour))
 
     super().__init__(pygame.math.Vector2(x, y), (255, 0, 0))
-
-    if settings.DEBUG:
-      print("Created guard at ({}, {})".format(self.pos.x, self.pos.y))
 
     self.initial_pos = pygame.math.Vector2(x, y)
 
@@ -40,7 +42,14 @@ class Guard(Entity):
     self.entities = entities
     self.checking_entity = None
 
-    self.speed = 0.5 * settings.TILE_SIZE
+    self.behaviour = behaviour
+
+    self.stroll_speed = config["stroll_speed"]
+    self.speed = self.stroll_speed * settings.TILE_SIZE
+
+    if settings.DEBUG:
+      print("Created guard at ({}, {}) and {}".format(self.pos.x, self.pos.y, self.check_probability))
+
 
   def perform_check(self):
     if self.checking_entity != None:
@@ -61,18 +70,22 @@ class Guard(Entity):
 
       self.start_check()
       self.checking_entity.start_check()
-      self.check_time = random.uniform(self.max_check_time, self.min_check_time)
+      self.check_time = random.uniform(self.min_check_time, self.max_check_time)
 
   def start_mission(self):
     if not self.in_mission:
       self.in_mission = True
+      self.speed = 0.5 * settings.TILE_SIZE
       self.mission = random.uniform(self.min_mission_time, self.max_mission_time)
 
   def stop_mission(self):
     if self.in_mission:
       self.in_mission = False
+      self.speed = self.stroll_speed * settings.TILE_SIZE
       self.wait_for_mission = self.mission_period
-      self.reset_pos()
+
+      if self.behaviour == "reset":
+        self.reset_pos()
 
   def reset_pos(self):
     self.pos.x = self.initial_pos.x
@@ -82,7 +95,9 @@ class Guard(Entity):
   def move(self, speed):
     if self.wait_for_mission > 0:
       self.wait_for_mission -= 1
-      return
+
+      if self.behaviour == "reset":
+        return
     else:
       self.start_mission()
 
@@ -103,7 +118,8 @@ class Guard(Entity):
 
     super().move(self.speed)
 
-    self.perform_check()
+    if self.in_mission:
+      self.perform_check()
 
   def update(self):
     super().update()

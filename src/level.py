@@ -39,8 +39,10 @@ class Level:
           self.doors.append(Door(index, door))
 
     def create_guards(self, config, day_duration):
-      for index, guard in enumerate(config):
-          self.guards.append(Guard(index, guard, day_duration, self.employees + [self.attacker]))
+      for i in range(config["number_of_guards"]):
+          index = 0 if len(config["config"]) == 1 else index
+          self.guards.append(Guard(i, config["config"][index], day_duration, self.employees + [self.attacker]))
+          index += 1
 
     def result(self):
        return self.attacker.result()
