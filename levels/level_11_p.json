@@ -16,10 +16,10 @@
   "attacker": {
     "x": 10,
     "y": 10,
-    "randomization": 32,
+    "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "jump",
+    "behaviour": "walk",
     "strategy": "p-test"
   },
   "employees": {
@@ -28,7 +28,10 @@
     "min_stay_time": 1,
     "randomization": 64
   },
-  "guards": [],
+  "guards": {
+    "number_of_guards": 0,
+    "config": []
+  },
   "doors": [
     {
       "x": 1.0,

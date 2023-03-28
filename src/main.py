@@ -23,19 +23,26 @@ parser.add_argument('--fps', dest="fps", help="Overwrite config fps")
 parser.add_argument('--cycles', dest="cycles", help="Overwrite config cycles per frame")
 
 class Game:
-    def __init__(self, id, config_file, stats):
+    def __init__(self, config_file, stats):
         pygame.init()
 
         self.name= str()
         self.simulation_time = int()
         self.setup(config_file)
 
+        self.font = pygame.font.SysFont("Arial", 18)
+
         self.screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
         self.clock = pygame.time.Clock()
-        self.run_game = True
 
         pygame.display.set_caption("Intrusion game")
 
+        self.reset(0, config_file, stats)
+
+    def __del__(self):
+        self.done()
+
+    def reset(self, id, config_file, stats):
         self.id = id
         self.wins = stats.wins
         self.losses = stats.losses
@@ -44,12 +51,14 @@ class Game:
 
         self.successes = 0
         self.time_taken = 0
+        self.run_game = True
         self.game_result = False
         self.stop = False
 
-        self.font = pygame.font.SysFont("Arial", 18)
-
         self.level = Level(config_file, self.game_finished)
+
+    def done(self):
+        pygame.quit()
 
     def setup(self, config_file):
         with open(config_file, 'r') as config:
@@ -98,7 +107,6 @@ class Game:
         for i, render in enumerate(renders):
             self.screen.blit(render, (10, 10 + 20 * i))
 
-
     def result(self):
         return (self.game_result, self.time_taken / 60, self.level.result())
 
@@ -125,11 +133,9 @@ class Game:
                     if event.type == pygame.QUIT:
                         self.run_game = False
                         self.stop = True
-                        pygame.quit()
                         return
 
                 if not self.run_game:
-                    pygame.quit()
                     return
 
                 # Draw all elements
@@ -139,8 +145,6 @@ class Game:
             self.update_stats()
             pygame.display.update()
             self.clock.tick(settings.FPS)
-
-        pygame.quit()
 
 class SimulationStats:
     def __init__(self, test_type, iterations):
@@ -240,8 +244,8 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
         settings.CYCLES_PER_FRAME = data["cycles_per_frame"] if cycles == None else int(cycles)
 
     stats = SimulationStats(test_type, iterations)
+    game = Game(config_file, stats)
     for i in range(iterations):
-        game = Game(i, config_file, stats)
         game.run()
 
         stats.update_result(game.result(), i)
@@ -249,6 +253,9 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
         if game.is_stopped():
             break
 
+        game.reset(i + 1, config_file, stats)
+
+    game.done()
     stats.done()
     stats.save("results/{}".format(os.path.basename(config_file)))
 
