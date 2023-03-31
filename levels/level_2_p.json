@@ -12,10 +12,13 @@
   "day_duration": 8,
 
   "test_type": "p-test",
+  "observed_mean": 0.354722,
 
   "attacker": {
     "x": 10,
     "y": 10,
+    "speed": 3.75,
+    "attack_speed": 0.07,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,

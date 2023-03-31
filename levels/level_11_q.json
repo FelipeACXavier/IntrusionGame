@@ -3,8 +3,8 @@
   "log_debug": false,
 
   "fps": 500,
-  "iterations": 100,
-  "cycles_per_frame": 200,
+  "iterations": 20,
+  "cycles_per_frame": 300,
 
   "tile_size": 32,
   "width": 10,
@@ -12,10 +12,12 @@
   "day_duration": 8,
 
   "test_type": "q-test",
+  "observed_mean": 0.762841,
 
   "attacker": {
     "x": 10,
     "y": 10,
+    "speed": 0.32,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
@@ -28,20 +30,21 @@
     "min_stay_time": 10,
     "randomization": 64,
     "behaviour": "stay",
-    "speed": 1.5
+    "speed": 1.0
   },
   "guards": {
     "number_of_guards": 1,
     "config": [
       {
         "check_radius": 2.5,
+        "entities_per_check": 1,
         "max_check_time": 3,
         "min_check_time": 1,
         "number_of_missions": 5,
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
-        "check_speed": 0.5,
+        "check_speed": 0.3,
         "stroll_speed": 0.1
       }
     ]

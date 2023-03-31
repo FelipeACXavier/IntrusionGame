@@ -1,13 +1,12 @@
 {
-  "wins": 6,
-  "losses": 4,
-  "avg_win_time": 288.0,
-  "avg_loss_time": 65.67666666666668,
+  "wins": 42,
+  "losses": 58,
+  "avg_win_time": 201.6,
+  "avg_loss_time": 135.52049999999997,
   "p-value": 0,
   "successes": 0,
   "failures": 0,
-  "q-value": 0.7368263888888889,
-  "sojurn_time": 7.3682638888888885,
-  "iterations": 10,
+  "q-value": 0.702334375,
+  "iterations": 100,
   "test_type": "q-test"
 }

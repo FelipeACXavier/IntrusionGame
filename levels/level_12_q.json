@@ -12,10 +12,12 @@
   "day_duration": 8,
 
   "test_type": "q-test",
+  "observed_mean": 0.689760,
 
   "attacker": {
     "x": 10,
     "y": 10,
+    "speed": 0.5,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
@@ -35,6 +37,7 @@
     "config": [
       {
         "check_radius": 2.5,
+        "entities_per_check": 1,
         "max_check_time": 3,
         "min_check_time": 1,
         "number_of_missions": 5,
