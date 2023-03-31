@@ -25,18 +25,19 @@ class Attacker(Entity):
     self.door = None
     self.doors = doors
 
-    self.behaviour = behaviour
     self.staying = True
     self.can_attack = False
     self.strategy = strategy
+    self.behaviour = behaviour
 
     self.initial_pos = pygame.math.Vector2(x, y)
     self.successes = 0
     self.failures = 0
 
-    self.speed = 0.5 * settings.TILE_SIZE
+    self.speed = config["speed"] * settings.TILE_SIZE
+    self.attack_speed = config["attack_speed"] if "attack_speed" in config else self.speed
 
-    self.stay_period = int(config["stay_period"] * 60)
+    self.stay_period = config["stay_period"] * 60
     self.attack_period = config["attack_period"] * 60
     self.stay_time = self.stay_period
     self.wait_time = self.attack_period
@@ -75,8 +76,8 @@ class Attacker(Entity):
     return {"success": self.successes, "failure": self.failures }
 
   def reset_pos(self):
-    self.pos.x = self.initial_pos.x
-    self.pos.y = self.initial_pos.y
+    self.pos.x = random.randint(0, settings.WIDTH) # self.initial_pos.x
+    self.pos.y = random.randint(0, settings.HEIGHT) # self.initial_pos.y
     self.constrain(self.speed)
 
     self.door = None
@@ -85,6 +86,7 @@ class Attacker(Entity):
     # Wait for next attempt in a few minutes
     self.wait_time = self.attack_period
     self.can_attack = False
+    self.stay_time = self.stay_period
 
   def move(self, speed):
     # Count time until we try to attack
@@ -112,8 +114,8 @@ class Attacker(Entity):
           self.direction.y = d_y
           self.direction = self.direction.normalize()
 
-          self.pos.x += self.direction.x * speed
-          self.pos.y += self.direction.y * speed
+          self.pos.x += self.direction.x * self.attack_speed
+          self.pos.y += self.direction.y * self.attack_speed
         elif self.behaviour == "jump":
           self.pos.x = self.door.x()
           self.pos.y = self.door.y()

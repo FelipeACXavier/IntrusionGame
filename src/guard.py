@@ -40,7 +40,8 @@ class Guard(Entity):
     self.wait_for_mission = random.uniform(0, self.mission_period)
 
     self.entities = entities
-    self.checking_entity = None
+    self.entity_per_check = config["entities_per_check"]
+    self.checking_entities = list()
 
     self.behaviour = behaviour
 
@@ -53,8 +54,8 @@ class Guard(Entity):
 
 
   def perform_check(self):
-    if self.checking_entity != None:
-      self.checking_entity = None
+    if len(self.checking_entities) > 1:
+      self.checking_entities = list()
       return
 
     possible_checks = list()
@@ -67,10 +68,18 @@ class Guard(Entity):
         possible_checks.append(entity)
 
     if len(possible_checks) > 0:
-      self.checking_entity = random.choice(possible_checks)
+      for i in range(self.entity_per_check):
+        if i >= len(possible_checks):
+          break
+
+        e = random.choice(possible_checks)
+        self.checking_entities.append(e)
+        possible_checks.remove(e)
 
       self.start_check()
-      self.checking_entity.start_check()
+      for e in self.checking_entities:
+        e.start_check()
+
       self.check_time = random.uniform(self.min_check_time, self.max_check_time)
 
   def start_mission(self):
@@ -114,8 +123,8 @@ class Guard(Entity):
     if self.is_checking:
       self.stop_check()
 
-      if self.checking_entity != None:
-        self.checking_entity.stop_check(self.check_radius)
+      for e in self.checking_entities:
+        e.stop_check(self.check_radius)
 
     super().move(self.speed)
 
@@ -126,6 +135,7 @@ class Guard(Entity):
     super().update()
 
     # Draw check radius
-    # pygame.draw.circle(self.surface, self.color if self.in_mission else (255, 255, 255), self.pos, self.show_radius, 1)
+    if settings.FPS <= 120:
+      pygame.draw.circle(self.surface, self.color if self.in_mission else (255, 255, 255), self.pos, self.show_radius, 1)
 
 

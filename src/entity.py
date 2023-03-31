@@ -63,4 +63,5 @@ class Entity:
 
     def update(self):
       self.move(self.speed)
-      pygame.draw.circle(self.surface, self.color, self.pos, settings.HALF_TILE * 0.5)
+      if settings.FPS <= 120:
+        pygame.draw.circle(self.surface, self.color, self.pos, settings.HALF_TILE * 0.5)

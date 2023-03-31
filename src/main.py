@@ -1,13 +1,20 @@
 import os
+import math
 import json
-import time
 import pygame
 import argparse
 import settings
 
+import numpy as np
+import scipy.stats as st
+import matplotlib.pyplot as plt
+
 from sys import exit
-from level import Level
-from screeninfo import get_monitors
+from game import Game
+from pathlib import Path
+from game_statistics import GameStats
+
+from matplotlib.backends.backend_pdf import PdfPages
 
 parser = argparse.ArgumentParser(
                     prog='IntrusionGame',
@@ -15,204 +22,18 @@ parser = argparse.ArgumentParser(
                                    Games—Optimizing Surveillance by Simulation and Game Theory\" paper""",
                     epilog='For research purpose only, see: https://github.com/FelipeACXavier/IntrusionGame')
 
-parser.add_argument('-c', dest="config", help="Specify the simulation config")
-parser.add_argument('-d', dest="directory", help="Run all configs in directory")
-parser.add_argument('-i', dest="iterations", help="Overwrite config iterations")
-parser.add_argument('-r', dest="runs", default=1, help="How many runs to average over")
-parser.add_argument('--fps', dest="fps", help="Overwrite config fps")
-parser.add_argument('--cycles', dest="cycles", help="Overwrite config cycles per frame")
+parser.add_argument('-c', dest="config", help="Specify the simulation config", type=str)
+parser.add_argument('-f', dest="data", help="Run only analysis from given file", type=str)
+parser.add_argument('-d', dest="directory", help="Run all configs in directory", type=str)
+parser.add_argument('-i', dest="iterations", help="Overwrite config iterations", type=int)
+parser.add_argument('-r', dest="runs", default=1, help="How many runs to average over", type=int)
+parser.add_argument('-e', dest="observed", help="Expected Z-test mean", type=float)
+parser.add_argument('--confidence', dest="confidence", default=0.75, help="Expected Z-test mean", type=float)
+parser.add_argument('--fps', dest="fps", help="Overwrite config fps", type=int)
+parser.add_argument('--cycles', dest="cycles", help="Overwrite config cycles per frame", type=int)
+parser.add_argument("--hidden", dest="hidden", action="store_true")
 
-class Game:
-    def __init__(self, config_file, stats):
-        self.name= str()
-        self.simulation_time = int()
-        self.setup(config_file)
-
-        self.font = pygame.font.SysFont("Arial", 18)
-
-        self.screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
-        self.clock = pygame.time.Clock()
-
-        pygame.display.set_caption("Intrusion game")
-
-        self.reset(0, config_file, stats)
-
-    def reset(self, id, config_file, stats):
-        self.id = id
-        self.wins = stats.wins
-        self.losses = stats.losses
-        self.win_time = stats.avg_win_time
-        self.loss_time = stats.avg_loss_time
-
-        self.successes = 0
-        self.time_taken = 0
-        self.run_game = True
-        self.game_result = False
-        self.stop = False
-
-        self.level = Level(config_file, self.game_finished)
-
-    def setup(self, config_file):
-        with open(config_file, 'r') as config:
-            data = json.load(config)
-            self.name = data["level"]
-            self.simulation_time = data["day_duration"] * 60 * 60
-
-            settings.TILE_SIZE = data["tile_size"]
-            settings.HALF_TILE = settings.TILE_SIZE / 2
-
-            settings.WIDTH = data["width"] * settings.TILE_SIZE
-            settings.HEIGHT = data["height"] * settings.TILE_SIZE
-
-        self.setup_display()
-
-    def setup_display(self):
-        monitors = get_monitors()
-        if len(monitors) > 1 and False:
-            pos_x = monitors[0].width + (monitors[1].width - settings.WIDTH) / 2
-            pos_y = (monitors[1].height - settings.WIDTH) / 2
-        else:
-            pos_x = (monitors[0].width - settings.WIDTH) / 2
-            pos_y = (monitors[0].height - settings.WIDTH) / 2
-
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (pos_x, pos_y)
-
-    def update_stats(self):
-        text = list()
-        text.append("Run: " + str(self.id))
-        text.append("Wins: " + str(self.wins) + " Loses: " + str(self.losses))
-        text.append("Game value: {:.2f}".format(self.wins / self.losses if self.losses else 1.0))
-        text.append("Avg win time: {:.2f}".format(self.win_time))
-        text.append("Avg loss time: {:.2f}".format(self.loss_time))
-        text.append("fps: " + str(int(self.clock.get_fps())))
-        text.append("{:.4f}".format((self.simulation_time - self.time_taken) / 60))
-
-        for i, t in enumerate(text):
-            render = self.font.render(t, 1, pygame.Color("coral"))
-            self.screen.blit(render, (10, 10 + 20 * i))
-
-    def result(self):
-        return (self.game_result, self.time_taken / 60, self.level.result())
-
-    def game_finished(self, success):
-        self.run_game = False
-        self.game_result = success
-        print("Took {:.4f} minutes to {}".format(self.time_taken / 60, "win" if success else "lose"))
-
-    def is_day_done(self):
-        return self.time_taken == self.simulation_time
-
-    def is_stopped(self):
-        return self.stop
-
-    def run(self):
-        while self.run_game:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.run_game = False
-                    self.stop = True
-                    return
-
-            self.screen.fill("Black")
-            for i in range(settings.CYCLES_PER_FRAME):
-                if self.is_day_done():
-                    self.game_finished(True)
-                    break
-
-                if not self.run_game:
-                    return
-
-                # Draw all elements
-                self.level.run()
-                self.time_taken += 1
-
-            self.update_stats()
-            pygame.display.update()
-            self.clock.tick(settings.FPS)
-
-class SimulationStats:
-    def __init__(self, test_type, iterations):
-        self.wins = 0
-        self.losses = 0
-
-        self.iterations = iterations
-
-        self.successes = 0
-        self.failures = 0
-        self.sojurn_time = 0
-        self.test_type = test_type
-
-        self.win_time = 0
-        self.loss_time = 0
-        self.avg_win_time = 0
-        self.avg_loss_time = 0
-
-        self.start = time.time()
-
-    def update_result(self, result, iteration):
-        if result[0]:
-            self.wins += 1
-            self.win_time += result[1]
-        else:
-            self.losses += 1
-            self.loss_time += result[1]
-
-        self.successes += result[2]["success"]
-        self.failures += result[2]["failure"]
-
-        self.sojurn_time += (result[1] / settings.DAY_LENGTH)
-        self.avg_win_time = self.win_time / (iteration + 1)
-        self.avg_loss_time = self.loss_time / (iteration + 1)
-
-        if self.test_type == "p-test":
-            print("Attempt {} has p={:.4f}".format(iteration, self.p_value()))
-        elif self.test_type == "q-test":
-            print("Attempt {} has q={:.4f}".format(iteration, self.q_value(iteration + 1)))
-
-    def done(self):
-        end = time.time()
-        print("Done running for {:.4f} seconds".format(end - self.start))
-        self.dump()
-
-    def dump(self):
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print("Done with {} iterations".format(self.iterations))
-        print("The attacker won {} games and lost {}".format(self.wins, self.losses))
-        print("Average win time {:.4f} minutes".format(self.avg_win_time))
-        print("Average loss time {:.4f} minutes".format(self.avg_loss_time))
-        print("Calculated p value = {:.6f}".format(self.p_value()))
-        print("Calculated q value = {:.6f}".format(self.q_value(self.iterations)))
-        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
-    def p_value(self):
-        if self.successes == 0 and self.failures == 0:
-            return 0
-
-        return self.successes / (self.successes + self.failures)
-
-    def q_value(self, iteration):
-        return self.sojurn_time / iteration
-
-    def save(self, file):
-        print("Saving results to " + file)
-        results = {
-            "wins": self.wins,
-            "losses": self.losses,
-            "avg_win_time": self.avg_win_time,
-            "avg_loss_time": self.avg_loss_time,
-            "p-value": self.p_value(),
-            "successes": self.successes,
-            "failures": self.failures,
-            "q-value": self.q_value(self.iterations),
-            "sojurn_time": self.sojurn_time,
-            "iterations": self.iterations,
-            "test_type": self.test_type
-        }
-
-        with open(file, "w") as f:
-            json.dump(results, f, indent=2)
-
-def run_simulation(config_file, runs=None, fps=None, cycles=None):
+def run_simulation(config_file, runs=None, fps=None, cycles=None, hidden=False):
     print("Running with file: {}".format(config_file))
 
     test_type = str()
@@ -220,24 +41,26 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
     with open(config_file, 'r') as config:
         data = json.load(config)
         test_type = data["test_type"]
-        iterations = data["iterations"] if runs == None else int(runs)
+        iterations = data["iterations"] if runs == None else runs
 
-        settings.FPS = data["fps"] if fps == None else int(fps)
+        settings.FPS = data["fps"] if fps == None else fps
         settings.DEBUG = data["log_debug"]
         settings.DAY_LENGTH = data["day_duration"] * 60
-        settings.CYCLES_PER_FRAME = data["cycles_per_frame"] if cycles == None else int(cycles)
+        settings.CYCLES_PER_FRAME = data["cycles_per_frame"] if cycles == None else cycles
 
     # Always init the library before the simulation starts
     pygame.init()
 
-    stats = SimulationStats(test_type, iterations)
-    game = Game(config_file, stats)
+    stats = GameStats(test_type, iterations)
+    game = Game(config_file, stats, hidden)
+    game_stopped = False
     for i in range(iterations):
         game.run()
 
         stats.update_result(game.result(), i)
 
         if game.is_stopped():
+            game_stopped = True
             break
 
         game.reset(i + 1, config_file, stats)
@@ -248,21 +71,71 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
     # Dont forget to deinitialise the library
     pygame.quit()
 
-    return stats.p_value(), stats.q_value(iterations)
+    mean = stats.p_value() if test_type == "p-test" else stats.q_value()
+    samples = stats.p_samples if test_type == "p-test" else stats.q_samples
+    return mean, samples, iterations, game_stopped
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    p = 0
-    q = 0
-    runs = int(args.runs)
+    var = 0
+    mean = 0
+    means = list()
+    observed = float()
 
-    if args.config != None:
+    path = str()
+    runs = args.runs
+
+    # =========================================================
+    # Only perform statistics tests
+    if args.data != None:
+        if not args.observed:
+            print("No observed value provided")
+            exit()
+
+        observed = args.observed
+        path = Path(args.data).stem
+        with open(args.data, "r") as f:
+            for i, line in enumerate(f.read().splitlines()):
+                if i == 0:
+                    mean = float(line)
+                elif i == 1:
+                    var = float(line)
+                else:
+                    means.append(float(line))
+    # =========================================================
+    # Run single level
+    elif args.config != None:
+        with open(args.config, 'r') as config:
+            data = json.load(config)
+            observed = data["observed_mean"]
+
         for i in range(runs):
-            pi, qi = run_simulation(args.config, runs=args.iterations, fps=args.fps, cycles=args.cycles)
-            p += pi
-            q += qi
+            mean_value, samples, iter, stopped = run_simulation(args.config, args.iterations, args.fps, args.cycles, args.hidden)
+            if runs == 1:
+                means.extend(samples)
+            else:
+                means.append(mean_value)
 
+            mean = sum(means) / len(means)
+            var = sum((j - mean) ** 2 for j in means) / len(means)
+
+            print("Finished {} out of {} runs".format(i + 1, runs))
+            print("Mean={:.6f} Variance={:.6f}".format(mean, var))
+            print("=========================================")
+
+            if stopped:
+                break
+
+        path = Path(args.config).stem + "_{}_{}".format(args.iterations if args.iterations else iter, args.runs)
+        with open("results/" + path + ".txt", "w+") as f:
+            f.write(str(mean) + "\n")
+            f.write(str(var) + "\n")
+            for v in means:
+                f.write(str(v) + "\n")
+
+    # =========================================================
+    # Run all levels in directory
     elif args.directory != None:
         for filename in os.listdir(args.directory):
             config_file = os.path.join(args.directory, filename)
@@ -270,9 +143,56 @@ if __name__ == "__main__":
             if not os.path.isfile(config_file):
                 continue
 
-            run_simulation(config_file, runs=args.iterations, fps=args.fps, cycles=args.cycles)
+            run_simulation(config_file, args.iterations, args.fps, args.cycles, args.hidden)
     else:
         print("No configuration file provided")
 
-    print("p={:.6f}, q={:6f}".format(p / runs, q / runs))
+    if len(means) > 0:
+        dev = math.sqrt(var)
+        pdf = PdfPages('results/{}_graph.pdf'.format(path))
+
+        fig_hist = plt.figure(1, figsize=(10,10))
+        fig_means = plt.figure(2, figsize=(10,10))
+        axis_hist = fig_hist.add_subplot(111)
+        axis_means = fig_means.add_subplot(111)
+
+        n, bins, patches = axis_hist.hist(x=means, bins=10, color='#0504aa', alpha=0.7, rwidth=0.85)
+
+        maxfreq = n.max()
+        axis_hist.set_ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
+
+        axis_hist.grid(axis='y', alpha=0.75)
+        axis_hist.set_xlabel('Value')
+        axis_hist.set_ylabel('Frequency')
+        axis_hist.set_title('Histogram for Q test')
+
+        axis_hist.axvline(x=mean, color='r', linestyle='-')
+        axis_hist.axvline(x=mean + dev, color='g', linestyle='-')
+        axis_hist.axvline(x=mean - dev, color='g', linestyle='-')
+
+        # Z-test
+        dev = math.sqrt(var)
+        confidence = args.confidence
+
+        prob = 1 - ((1 - confidence) / 2)
+        p_value = st.norm.ppf(prob)
+        den = dev / math.sqrt(len(means))
+
+        Z = 1000 if den == 0 else abs( (observed - mean) / den )
+
+        print("=========================================")
+        print("Observed mean={:.4f}".format(observed))
+        print("Expected mean={:.4f} variance={:.4f}".format(mean, var))
+        print("Z={:.4f} P-value={:.4f} {}".format(Z, p_value, "Passed" if Z < p_value else "Failed"))
+        print("=========================================")
+
+        x_axis = np.linspace(0, len(means), len(means))
+        axis_means.plot(x_axis, means)
+
+        plt.show()
+
+        pdf.savefig(figure=fig_hist)
+        pdf.savefig(figure=fig_means)
+        pdf.close()
+
     exit()

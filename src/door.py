@@ -12,8 +12,15 @@ class Door:
     if door_type != "intra_level" and door_type != "inter_level":
       raise Exception("Door type {} is not valid".format(door_type))
 
-    x = config["x"] * settings.WIDTH
-    y = config["y"] * settings.HEIGHT
+    x = 0
+    y = 0
+    if "x_randomization" in config:
+      x = config["x_randomization"]
+    if "y_randomization" in config:
+      y = config["y_randomization"]
+
+    x = config["x"] * settings.WIDTH + random.randint(-x, x)
+    y = config["y"] * settings.HEIGHT + random.randint(-y, y)
 
     self.open = False
     self.name = id
@@ -25,14 +32,16 @@ class Door:
 
     self.rect = pygame.Rect(self.pos.x , self.pos.y, w, h)
 
-    self.short_opening = config["short_opening_probability"]
     self.inter_duration = config["inter_opening_time"] * 60
     self.max_open_duration = config["max_open_time"] * 60
     self.min_open_duration = config["min_open_time"] * 60
     self.max_short_open_time = config["max_short_open_time"] * 60
     self.min_short_open_time = config["min_short_open_time"] * 60
+    self.short_opening_probability = config["short_opening_probability"]
 
-    self.state_time = random.gauss(mu=self.inter_duration, sigma=60)
+    self.sigma = 1
+    self.state_time = 0 # random.gauss(mu=self.inter_duration, sigma=self.sigma)
+
     if settings.DEBUG:
       print("Starting door {} closed for {:.4} minutes".format(self.id(), self.state_time / 60))
 
@@ -99,7 +108,7 @@ class Door:
           self.state_time -= 1
           return
 
-      self.state_time = random.gauss(mu=self.inter_duration, sigma=60)
+      self.state_time = random.gauss(mu=self.inter_duration, sigma=self.sigma)
       if settings.DEBUG:
         print("Closing door for {:.4} minutes".format(self.state_time / 60))
       self.open = False
@@ -110,7 +119,7 @@ class Door:
           return
 
       # Check if the door should open for a short or long time
-      is_short_open = (random.uniform(0, 1) < self.short_opening)
+      is_short_open = (random.uniform(0, 1) <= self.short_opening_probability)
       if is_short_open:
         self.state_time = random.uniform(self.min_short_open_time, self.max_short_open_time)
       else:
@@ -123,5 +132,6 @@ class Door:
 
   def update(self):
     self.react()
-    pygame.draw.rect(self.surface, (0, 255, 0) if self.open else (255, 0, 0), self.rect)
-    pygame.draw.rect(self.surface, (0, 100, 0) if self.open else (100, 0, 0), self.area)
+    if settings.FPS <= 120:
+      pygame.draw.rect(self.surface, (0, 255, 0) if self.open else (255, 0, 0), self.rect)
+      pygame.draw.rect(self.surface, (0, 100, 0) if self.open else (100, 0, 0), self.area)
