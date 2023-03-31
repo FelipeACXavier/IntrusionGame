@@ -45,6 +45,7 @@ class Guard(Entity):
     self.behaviour = behaviour
 
     self.stroll_speed = config["stroll_speed"]
+    self.check_speed = config["check_speed"]
     self.speed = self.stroll_speed * settings.TILE_SIZE
 
     if settings.DEBUG:
@@ -75,7 +76,7 @@ class Guard(Entity):
   def start_mission(self):
     if not self.in_mission:
       self.in_mission = True
-      self.speed = 0.5 * settings.TILE_SIZE
+      self.speed = self.check_speed * settings.TILE_SIZE
       self.mission = random.uniform(self.min_mission_time, self.max_mission_time)
 
   def stop_mission(self):
@@ -125,6 +126,6 @@ class Guard(Entity):
     super().update()
 
     # Draw check radius
-    pygame.draw.circle(self.surface, self.color if self.in_mission else (255, 255, 255), self.pos, self.show_radius, 1)
+    # pygame.draw.circle(self.surface, self.color if self.in_mission else (255, 255, 255), self.pos, self.show_radius, 1)
 
 

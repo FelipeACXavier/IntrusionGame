@@ -28,13 +28,12 @@
     "min_stay_time": 10,
     "randomization": 128,
     "behaviour": "walk",
-    "speed": 1.5
+    "speed": 2
   },
   "guards": {
     "number_of_guards": 6,
     "config": [
       {
-        "randomization": 128,
         "check_radius": 2.5,
         "max_check_time": 3,
         "min_check_time": 1,
@@ -42,7 +41,8 @@
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
-        "stroll_speed": 0.2
+        "check_speed": 2,
+        "stroll_speed": 0.1
       }
     ]
   },

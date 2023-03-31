@@ -34,7 +34,6 @@
     "number_of_guards": 1,
     "config": [
       {
-        "randomization": 128,
         "check_radius": 2.5,
         "max_check_time": 3,
         "min_check_time": 1,
@@ -42,6 +41,7 @@
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
+        "check_speed": 0.5,
         "stroll_speed": 0.1
       }
     ]

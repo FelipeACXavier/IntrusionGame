@@ -24,8 +24,6 @@ parser.add_argument('--cycles', dest="cycles", help="Overwrite config cycles per
 
 class Game:
     def __init__(self, config_file, stats):
-        pygame.init()
-
         self.name= str()
         self.simulation_time = int()
         self.setup(config_file)
@@ -38,9 +36,6 @@ class Game:
         pygame.display.set_caption("Intrusion game")
 
         self.reset(0, config_file, stats)
-
-    def __del__(self):
-        self.done()
 
     def reset(self, id, config_file, stats):
         self.id = id
@@ -56,9 +51,6 @@ class Game:
         self.stop = False
 
         self.level = Level(config_file, self.game_finished)
-
-    def done(self):
-        pygame.quit()
 
     def setup(self, config_file):
         with open(config_file, 'r') as config:
@@ -86,25 +78,17 @@ class Game:
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (pos_x, pos_y)
 
     def update_stats(self):
-        renders = []
-        id_text = "Run: " + str(self.id)
-        stat_text = "Wins: " + str(self.wins) + " Loses: " + str(self.losses)
-        value_text = "Game value: {:.2f}".format(self.wins / self.losses if self.losses else 1.0)
-        win_text = "Avg win time: {:.2f}".format(self.win_time)
-        loss_text = "Avg loss time: {:.2f}".format(self.loss_time)
-        fps = "fps: " + str(int(self.clock.get_fps()))
-        sim_time = "{:.4f}".format((self.simulation_time - self.time_taken) / 60)
+        text = list()
+        text.append("Run: " + str(self.id))
+        text.append("Wins: " + str(self.wins) + " Loses: " + str(self.losses))
+        text.append("Game value: {:.2f}".format(self.wins / self.losses if self.losses else 1.0))
+        text.append("Avg win time: {:.2f}".format(self.win_time))
+        text.append("Avg loss time: {:.2f}".format(self.loss_time))
+        text.append("fps: " + str(int(self.clock.get_fps())))
+        text.append("{:.4f}".format((self.simulation_time - self.time_taken) / 60))
 
-        renders.append(self.font.render(self.name, 1, pygame.Color("coral")))
-        renders.append(self.font.render(id_text, 1, pygame.Color("coral")))
-        renders.append(self.font.render(stat_text, 1, pygame.Color("coral")))
-        renders.append(self.font.render(value_text, 1, pygame.Color("coral")))
-        renders.append(self.font.render(win_text, 1, pygame.Color("green")))
-        renders.append(self.font.render(loss_text, 1, pygame.Color("red")))
-        renders.append(self.font.render(fps, 1, pygame.Color("coral")))
-        renders.append(self.font.render(sim_time, 1, pygame.Color("coral")))
-
-        for i, render in enumerate(renders):
+        for i, t in enumerate(text):
+            render = self.font.render(t, 1, pygame.Color("coral"))
             self.screen.blit(render, (10, 10 + 20 * i))
 
     def result(self):
@@ -123,17 +107,17 @@ class Game:
 
     def run(self):
         while self.run_game:
-            self.screen.fill('Black')
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.run_game = False
+                    self.stop = True
+                    return
+
+            self.screen.fill("Black")
             for i in range(settings.CYCLES_PER_FRAME):
                 if self.is_day_done():
                     self.game_finished(True)
                     break
-
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.run_game = False
-                        self.stop = True
-                        return
 
                 if not self.run_game:
                     return
@@ -243,6 +227,9 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
         settings.DAY_LENGTH = data["day_duration"] * 60
         settings.CYCLES_PER_FRAME = data["cycles_per_frame"] if cycles == None else int(cycles)
 
+    # Always init the library before the simulation starts
+    pygame.init()
+
     stats = SimulationStats(test_type, iterations)
     game = Game(config_file, stats)
     for i in range(iterations):
@@ -255,9 +242,11 @@ def run_simulation(config_file, runs=None, fps=None, cycles=None):
 
         game.reset(i + 1, config_file, stats)
 
-    game.done()
     stats.done()
     stats.save("results/{}".format(os.path.basename(config_file)))
+
+    # Dont forget to deinitialise the library
+    pygame.quit()
 
     return stats.p_value(), stats.q_value(iterations)
 
