@@ -3,12 +3,12 @@
   "log_debug": false,
 
   "fps": 500,
-  "iterations": 100,
+  "iterations": 500,
   "cycles_per_frame": 200,
 
   "tile_size": 32,
-  "width": 21.5,
-  "height": 18,
+  "width": 6,
+  "height": 64.5,
   "day_duration": 8,
 
   "test_type": "p-test",
@@ -19,7 +19,7 @@
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "jump",
+    "behaviour": "walk",
     "strategy": "p-test"
   },
   "employees": {

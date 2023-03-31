@@ -17,14 +17,20 @@ class Employee(Entity):
         super().__init__(pos, (117, random.randint(100, 200), random.randint(0, 50)))
 
         self.name = id
-        self.max_stay_time = config["max_stay_time"]
-        self.min_stay_time = config["min_stay_time"]
+        self.max_stay_time = config["max_stay_time"] * 60
+        self.min_stay_time = config["min_stay_time"] * 60
 
         self.stay_time = 0
         self.behaviour = behaviour
         self.speed = config["speed"] * settings.TILE_SIZE
+        self.goalx = 0
+        self.goaly = 0
         if settings.DEBUG:
             print("Created employee at ({}, {})".format(pos.x, pos.y))
+
+    def set_goal(self):
+        self.goalx = random.randint(0, settings.WIDTH)
+        self.goaly = random.randint(0, settings.HEIGHT)
 
     def stop_check(self, check_radius = None):
         super().stop_check()
@@ -49,8 +55,24 @@ class Employee(Entity):
             self.stay_time -= 1
             return
 
-        super().move(speed)
+        if self.stay_time <= 0:
+            self.set_goal()
+
+        # super().move(speed)
+        if self.is_checking:
+            return
+
+        d_x = self.goalx - self.x()
+        d_y = self.goaly - self.y()
+        if (abs(d_x) > settings.HALF_TILE or abs(d_y) > settings.HALF_TILE):
+            self.direction.x = d_x
+            self.direction.y = d_y
+            self.direction = self.direction.normalize()
+
+            self.pos.x += self.direction.x * speed
+            self.pos.y += self.direction.y * speed
+        else:
+            self.stay_time = random.uniform(self.min_stay_time, self.max_stay_time)
 
         # Uniform distribution between 10 and 60 minutes
         # self.stay_time = random.uniform(self.min_stay_time, self.max_stay_time)
-        self.stay_time = random.uniform(self.min_stay_time, self.max_stay_time) * 60

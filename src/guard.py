@@ -20,6 +20,8 @@ class Guard(Entity):
 
     super().__init__(pygame.math.Vector2(x, y), (255, 0, 0))
 
+    self.tick = 0
+
     self.initial_pos = pygame.math.Vector2(x, y)
 
     self.name = id
@@ -93,7 +95,7 @@ class Guard(Entity):
     self.pos.y = self.initial_pos.y
     self.constrain(self.speed)
 
-  def move(self, speed):
+  def move(self, speed): 
     if self.wait_for_mission > 0:
       self.wait_for_mission -= 1
 
@@ -101,6 +103,7 @@ class Guard(Entity):
         return
     else:
       self.start_mission()
+      
 
     if self.mission > 0:
       self.mission -= 1
