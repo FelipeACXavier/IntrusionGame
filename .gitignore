@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# This damn vscode folder...
+.vscode/
+
+# Ignore the submodule
+src_cpp/argumentum
+
 # C extensions
 *.so
 

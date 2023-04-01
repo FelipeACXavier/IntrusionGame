@@ -1,0 +1,3 @@
+[submodule "src_cpp/argumentum"]
+	path = src_cpp/argumentum
+	url = https://github.com/mmahnic/argumentum.git
