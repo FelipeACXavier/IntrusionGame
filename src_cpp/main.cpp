@@ -58,7 +58,16 @@ int main (int argc, char **argv)
     .help("Do not show display when simulating");
 
   if (!parser.parse_args(argc, argv, 1))
+  {
+    printf("Use %s -h or --help to view the options\n", argv[0]);
     return 1;
+  }
+
+  if (configFile.empty())
+  {
+    printf("No configuration file provided\n");
+    return 1;
+  }
 
   std::ifstream f(configFile);
   auto configs = json::parse(f);
