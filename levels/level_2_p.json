@@ -6,23 +6,47 @@
   "iterations": 100,
   "cycles_per_frame": 200,
 
-  "tile_size": 32,
-  "width": 7,
-  "height": 37.5,
+  "tile_size": 16,
+  "width": 16,
+  "height": 31.5,
   "day_duration": 8,
 
   "test_type": "p-test",
   "observed_mean": 0.354722,
 
+  "walls": [
+    { "x1": 0,   "y1": 0,   "x2": 0,   "y2": 503},
+    { "x1": 0,   "y1": 503, "x2": 256, "y2": 503},
+    { "x1": 255, "y1": 0,   "x2": 255, "y2": 503},
+    { "x1": 0,   "y1": 0,   "x2": 256, "y2":   0},
+
+    { "x1": 128, "y1": 0,   "x2": 128, "y2": 300},
+    { "x1": 128, "y1": 300, "x2": 256, "y2": 300, "dead_x": "right", "dead_y": "top"},
+
+    { "x1": 46,  "y1": 0,   "x2": 46,  "y2": 64},
+    { "x1": 46,  "y1": 64,  "x2": 77,  "y2": 64},
+    { "x1": 97,  "y1": 64,  "x2": 128, "y2": 64},
+
+    { "x1": 0,   "y1": 402,  "x2": 22, "y2": 402},
+    { "x1": 42,  "y1": 402,  "x2": 64, "y2": 402},
+    { "x1": 64,  "y1": 402,  "x2": 64, "y2": 504},
+
+    { "x1": 192, "y1": 300,  "x2": 192, "y2": 432},
+    { "x1": 192, "y1": 402,  "x2": 205, "y2": 402},
+    { "x1": 225, "y1": 402,  "x2": 256, "y2": 402},
+    { "x1": 150, "y1": 432,  "x2": 192, "y2": 432},
+    { "x1": 150, "y1": 432,  "x2": 150, "y2": 475},
+    { "x1": 150, "y1": 492,  "x2": 150, "y2": 504}
+  ],
   "attacker": {
     "x": 10,
     "y": 10,
-    "speed": 3.75,
+    "speed": 3.0,
     "attack_speed": 0.07,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "walk",
+    "behaviour": "jump",
     "strategy": "p-test"
   },
   "employees": {
@@ -37,10 +61,34 @@
   },
   "doors": [
     {
-      "x": 1.0,
-      "y": 0.5,
+      "x": 0.47,
+      "y": 0.4,
       "type": "inter_level",
       "direction": "right",
+      "inter_opening_time": 7.5,
+      "short_opening_probability": 0.7,
+      "max_open_time": 12,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    },
+    {
+      "x": 0.6125,
+      "y": 0.6125,
+      "type": "inter_level",
+      "direction": "top",
+      "inter_opening_time": 7.5,
+      "short_opening_probability": 0.7,
+      "max_open_time": 12,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    },
+    {
+      "x": 1.0,
+      "y": 0.7,
+      "type": "inter_level",
+      "direction": "top",
       "inter_opening_time": 7.5,
       "short_opening_probability": 0.7,
       "max_open_time": 12,
