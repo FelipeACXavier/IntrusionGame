@@ -60,19 +60,6 @@ void Employee::Move(float speed)
   mWaitTime = mRandomWait->Uniform();
 }
 
-// void Employee::Constrain(float speed)
-// {
-//   if (X() > WIDTH)
-//     mPos.x = WIDTH - HALF_TILE;
-//   else if (X() < 0)
-//     mPos.x = HALF_TILE;
-
-//   if (Y() > HEIGHT)
-//     mPos.y = HEIGHT - HALF_TILE;
-//   else if (Y() < 0)
-//     mPos.y = HALF_TILE;
-// }
-
 void Employee::StopCheck()
 {
   Movable::StopCheck();

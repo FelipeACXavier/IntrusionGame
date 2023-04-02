@@ -14,7 +14,6 @@ public:
   ~Employee();
 
   void Move(float speed) override;
-  // void Constrain(float speed) override;
   void StopCheck() override;
 
 private:

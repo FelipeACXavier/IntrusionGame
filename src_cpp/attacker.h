@@ -49,8 +49,6 @@ private:
   uint32_t mWaitTime;
   uint32_t mAttackPeriod;
 
-  // void Constrain(float speed) override;
-
   void SelectDoor();
   void ResetPosition();
 };

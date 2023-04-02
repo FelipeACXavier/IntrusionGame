@@ -68,12 +68,11 @@ void Attacker::SelectDoor()
 
 void Attacker::ResetPosition()
 {
-  printf("Reset position\n");
-  mPos.x = mRandomWidth->Uniform();
-  mPos.y = mRandomHeight->Uniform();
+  // mPos.x = mRandomWidth->Uniform();
+  // mPos.y = mRandomHeight->Uniform();
 
-  // Constrain(mSpeed);
-  // Movable::Move(mSpeed);
+  Constrain(mSpeed);
+  Movable::Move(mSpeed);
 
   mStaying = true;
   mCanAttack = false;
@@ -83,19 +82,6 @@ void Attacker::ResetPosition()
   mWaitTime = mAttackPeriod;
   mStayTime = mStayPeriod;
 }
-
-// void Attacker::Constrain(float speed)
-// {
-//   if (X() > WIDTH)
-//     mPos.x = WIDTH - HALF_TILE;
-//   else if (X() < 0)
-//     mPos.x = HALF_TILE;
-
-//   if (Y() > HEIGHT)
-//     mPos.y = HEIGHT - HALF_TILE;
-//   else if (Y() < 0)
-//     mPos.y = HALF_TILE;
-// }
 
 void Attacker::Move(float speed)
 {
