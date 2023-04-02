@@ -18,16 +18,7 @@ Level::~Level()
 
 bool Level::Init(const nlohmann::json& config)
 {
-  for (auto& line : config["walls"])
-  {
-    mWalls.push_back(Line(line["x1"], line["y1"], line["x2"], line["y2"]));
-    if (line.contains("dead_x") && line.contains("dead_y"))
-    {
-      mWalls.back().deadX = line["dead_x"] == "right" ? WIDTH - float(line["x1"]) : float(line["x1"]);
-      mWalls.back().deadY = line["dead_y"] == "bottom" ? HEIGHT - float(line["y1"]) : float(line["y1"]);
-    }
-  }
-
+  LOG_AND_RETURN_ON_FAILURE(CreateWalls(config["walls"]), "Failed to create walls");
   LOG_AND_RETURN_ON_FAILURE(CreateDoors(config["doors"], mRenderer), "Failed to create doors");
   LOG_AND_RETURN_ON_FAILURE(CreateAttacker(config["attacker"], mRenderer), "Failed to create attacker");
   LOG_AND_RETURN_ON_FAILURE(CreateEmployees(config["employees"], mRenderer), "Failed to create employees");
@@ -51,9 +42,7 @@ bool Level::Run()
 
   SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
   for (auto& wall : mWalls)
-  {
     SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
-  }
 
   return true;
 }
@@ -68,6 +57,52 @@ DoorStats Level::GetResult()
     stats.failures += s.failures;
   }
   return stats;
+}
+
+bool Level::CreateWalls(const nlohmann::json& config)
+{
+  try
+  {
+    for (auto& line : config)
+    {
+      mWalls.push_back(Line(line["x1"], line["y1"], line["x2"], line["y2"]));
+      bool hasX = line.contains("dead_x");
+      bool hasY = line.contains("dead_y");
+      if (!hasX && !hasY)
+        continue;
+
+      if (hasX)
+      {
+        mWalls.back().deadzone.x = line["dead_x"] == "right" ? float(line["x1"]) : 0;
+        mWalls.back().deadzone.w = line["dead_x"] == "right" ? WIDTH - float(line["x1"]) : float(line["x1"]);
+      }
+      else
+      {
+        mWalls.back().deadzone.x = float(line["x1"]);
+        mWalls.back().deadzone.w = float(line["x2"]) - float(line["x1"]);
+      }
+
+      if (hasY)
+      {
+        mWalls.back().deadzone.y = line["dead_y"] == "bottom" ? float(line["y1"]) : 0;
+        mWalls.back().deadzone.h = line["dead_y"] == "bottom" ? HEIGHT - float(line["y1"]) : float(line["y2"]);
+      }
+      else
+      {
+        mWalls.back().deadzone.y = float(line["y1"]);
+        mWalls.back().deadzone.h = float(line["y2"]) - float(line["y1"]);
+      }
+
+      printf("Created line with deadzone: %d %d %d %d\n", mWalls.back().deadzone.x, mWalls.back().deadzone.y, mWalls.back().deadzone.w, mWalls.back().deadzone.h);
+    }
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+
+  return true;
 }
 
 bool Level::CreateDoors(const nlohmann::json& config, SDL_Renderer* renderer)

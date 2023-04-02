@@ -12,9 +12,11 @@ find_package(SDL2 REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json REQUIRED)
 pkg_check_modules(SDL2_ttf REQUIRED sdl2)
+pkg_check_modules(SDL2_image REQUIRED sdl2)
 
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2TTF_INCLUDE_DIRS})
+include_directories(${SDL2IMAGE_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -31,4 +33,4 @@ target_link_libraries(${EXEC} Argumentum::argumentum)
 
 # For SDL
 target_link_libraries(${EXEC} ${SDL2_LIBRARIES})
-target_link_libraries(${EXEC} SDL2_ttf)
+target_link_libraries(${EXEC} SDL2_ttf SDL2_image)

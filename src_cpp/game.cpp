@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "SDL_image.h"
+
 #include "helpers.h"
 #include "settings.h"
 
@@ -96,12 +98,14 @@ bool Game::SetupSDL()
   mWindow = SDL_CreateWindow("Intrusion game", (DM.w - WIDTH) / 2, (DM.h - HEIGHT) / 2, WIDTH, HEIGHT, flags);
   LOG_AND_RETURN_ON_FAILURE(mWindow, "Failed to create window");
 
+  SDL_Surface* icon = IMG_Load("../assets/icon.png");
+  SDL_SetWindowIcon(mWindow, icon);
+
   mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED);
   LOG_AND_RETURN_ON_FAILURE(mRenderer, "Failed to create window");
 
-  mFont = TTF_OpenFont("/usr/share/fonts/fonts/ttf/JetBrainsMonoNL-SemiBold.ttf", 18);
-  if (mFont == NULL)
-    mFont = TTF_OpenFont("/usr/share/fonts/fonts/truetype/open-sans/OpenSans-Regular.ttf", 18);
+  mFont = TTF_OpenFont("../assets/JetBrainsMonoNL-SemiBold.ttf", 18);
+  LOG_AND_RETURN_ON_FAILURE(mFont, "Could not open font file");
 
   // Rectagle used to display UI
   mTextRect.x = 10;

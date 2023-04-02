@@ -19,8 +19,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
 
-        icon_path = os.path.join(os.getcwd(), 'icon.webp')
-        icon = pygame.image.load(icon_path)
+        icon = pygame.image.load('../assets/icon.png')
 
         pygame.display.set_icon(icon)
         pygame.display.set_caption("Intrusion game")

@@ -68,10 +68,6 @@ void Attacker::SelectDoor()
 
 void Attacker::ResetPosition()
 {
-  // mPos.x = mRandomWidth->Uniform();
-  // mPos.y = mRandomHeight->Uniform();
-
-  Constrain(mSpeed);
   Movable::Move(mSpeed);
 
   mStaying = true;

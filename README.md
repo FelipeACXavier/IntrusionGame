@@ -13,7 +13,7 @@ python main.py
 To run the C++ version, make sure the libraries are installed:
 
 ```
-sudo apt-get install cmake libsdl2-2.0-0 libsdl2-dev libsdl2-ttf-dev libsdlnlohmann-json-dev
+sudo apt-get install cmake libsdl2-2.0-0 libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdlnlohmann-json-dev
 ```
 Pull the necessary git submodules:
 ```

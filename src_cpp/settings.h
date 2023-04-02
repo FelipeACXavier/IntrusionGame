@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <SDL2/SDL.h>
 
 extern uint32_t FPS;
 extern uint32_t CYCLES_PER_FRAME;
@@ -50,8 +51,7 @@ struct Line
   float b = 0.0;
   float c = 0.0;
 
-  float deadX = 0.0;
-  float deadY = 0.0;
+  SDL_Rect deadzone;
 };
 
 struct DoorStats

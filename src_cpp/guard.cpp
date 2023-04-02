@@ -25,8 +25,8 @@ Guard::Guard(uint32_t id, const nlohmann::json& config,
     mPos.y = mRandomHeight->Uniform();
     for (const auto& wall : walls)
     {
-      if (mPos.x > wall.p1.x && mPos.x < wall.p1.x + wall.deadX &&
-          mPos.y > wall.p1.y && mPos.y < wall.p1.y + wall.deadY)
+      if (mPos.x > wall.deadzone.x && mPos.x < wall.deadzone.x + wall.deadzone.w &&
+          mPos.y > wall.deadzone.y && mPos.y < wall.deadzone.y + wall.deadzone.h)
         ok = false;
     }
   } while (!ok);
