@@ -17,9 +17,9 @@ Door::Door(uint32_t id, const nlohmann::json& config, SDL_Renderer* renderer)
 
   CreateArea(config["direction"]);
 
-  float interDuration = float(config["inter_opening_time"]) * 60;
   float maxOpenTime = float(config["max_open_time"]) * 60;
   float minOpenTime = float(config["min_open_time"]) * 60;
+  float interDuration = float(config["inter_opening_time"]) * 60;
   float maxShortOpenTime = float(config["max_short_open_time"]) * 60;
   float minShortOpenTime = float(config["min_short_open_time"]) * 60;
 
@@ -28,7 +28,6 @@ Door::Door(uint32_t id, const nlohmann::json& config, SDL_Renderer* renderer)
   mClosingRandom = std::make_unique<Randomizer>(interDuration, 1);
   mShortOpeningRandom = std::make_unique<Randomizer>(minShortOpenTime, maxShortOpenTime);
   mLongOpeningRandom = std::make_unique<Randomizer>(minOpenTime, maxOpenTime);
-
 }
 
 Door::~Door()
@@ -121,6 +120,9 @@ void Door::React()
 void Door::Update()
 {
   React();
+
+  if (HIDDEN)
+    return;
 
   if (IsOpen())
     SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);

@@ -95,8 +95,9 @@ int main (int argc, char **argv)
       stats.UpdateStats(j, game->GetResult());
       game->Reset();
     }
-    printf("Done with %u out of %u batches\n", i, args.batches);
+    printf("Done with %u out of %u batches\n", i + 1, args.batches);
     stats.Dump();
+    game.reset();
   }
 
   printf("Done running %u simulations\n", args.batches * iterations);

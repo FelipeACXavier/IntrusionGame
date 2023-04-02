@@ -1,7 +1,13 @@
 #include "guard.h"
 
-Guard::Guard(uint32_t id, const nlohmann::json& config, const std::vector<PMovable>& movables, SDL_Renderer* renderer)
-    : Movable(0, 0, renderer)
+#include "stdio.h"
+#include "helpers.h"
+
+Guard::Guard(uint32_t id, const nlohmann::json& config,
+             const std::vector<PMovable>& movables,
+             const std::vector<Line>& walls,
+             SDL_Renderer* renderer)
+    : Movable(0, 0, walls, renderer)
     , mId(id)
     , mMovables(movables)
     , mCheckTime(0)
@@ -11,8 +17,19 @@ Guard::Guard(uint32_t id, const nlohmann::json& config, const std::vector<PMovab
   // For rand() later
   srand (time(NULL));
 
-  mPos.x = mRandomWidth->Uniform();
-  mPos.y = mRandomHeight->Uniform();
+  bool ok;
+  do
+  {
+    ok = true;
+    mPos.x = mRandomWidth->Uniform();
+    mPos.y = mRandomHeight->Uniform();
+    for (const auto& wall : walls)
+    {
+      if (mPos.x > wall.p1.x && mPos.x < wall.p1.x + wall.deadX &&
+          mPos.y > wall.p1.y && mPos.y < wall.p1.y + wall.deadY)
+        ok = false;
+    }
+  } while (!ok);
 
   SetColor(255, 0, 0);
 
@@ -56,10 +73,13 @@ void Guard::Update()
 {
   Movable::Update();
 
-  // if (!mInMission)
-  //   SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+  if (HIDDEN)
+    return;
 
-  // DrawCircle(mPos.x, mPos.y, mShowRadius);
+  if (!mInMission)
+    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+
+  DrawCircle(mPos.x, mPos.y, mShowRadius);
 }
 
 void Guard::Move(float speed)
@@ -135,15 +155,17 @@ void Guard::PerformCheck()
     if (e->IsChecking())
       continue;
 
-    float dist = std::pow(X() - e->X(), 2) + std::pow(Y() - e->Y(), 2);
+    double dist = std::pow(X() - e->X(), 2) + std::pow(Y() - e->Y(), 2);
     if (dist <= mCheckRadius)
       possibleChecks.push_back(e);
   }
 
+  RayCast(possibleChecks);
+
   if (possibleChecks.empty())
     return;
 
-  for (uint32_t i = 0; i < mMovablesPerCheck; ++i)
+  for (uint32_t i = 0; i < mMovablesPerCheck && !possibleChecks.empty(); ++i)
   {
     int index = rand() % possibleChecks.size();
     mBeingChecked.push_back(possibleChecks.at(index));
@@ -161,4 +183,21 @@ void Guard::PerformCheck()
 void Guard::ResetPosition()
 {
 
+}
+
+void Guard::RayCast(std::vector<PMovable>& checks)
+{
+  for (auto iter = checks.begin(); iter < checks.end();)
+  {
+    // for (int i = -1; i <= 1; ++i)
+    {
+      Point p((*iter)->X(), (*iter)->Y());
+      Point min = Raycast(mPos, p, mWalls);
+
+      if (min == p)
+        iter++;
+      else
+        iter = checks.erase(iter);
+    }
+  }
 }

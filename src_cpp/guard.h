@@ -12,7 +12,10 @@
 class Guard : public Movable
 {
 public:
-  Guard(uint32_t id, const nlohmann::json& config, const std::vector<PMovable>& movables, SDL_Renderer* rendere);
+  Guard(uint32_t id, const nlohmann::json& config,
+        const std::vector<PMovable>& movables,
+        const std::vector<Line>& lines,
+        SDL_Renderer* renderer);
   ~Guard();
 
   void Update() override;
@@ -51,6 +54,8 @@ private:
 
   void PerformCheck();
   void ResetPosition();
+
+  void RayCast(std::vector<PMovable>& checks);
 };
 
 typedef std::shared_ptr<Guard> PGuard;

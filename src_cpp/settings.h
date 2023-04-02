@@ -10,10 +10,48 @@ extern uint32_t HEIGHT;
 extern uint32_t TILE_SIZE;
 extern uint32_t HALF_TILE;
 
+extern bool HIDDEN;
+
 struct Point
 {
+  Point(){}
+
+  Point(float x_c, float y_c)
+    : x(x_c)
+    , y(y_c)
+  {}
+
+  bool operator==(Point const& p)
+  {
+    return x == p.x && y == p.y;
+  }
+
   float x = 0;
   float y = 0;
+};
+
+struct Line
+{
+  Line() {}
+
+  Line(float x1, float y1, float x2, float y2)
+    : p1(x1, y1)
+    , p2(x2, y2)
+  {
+    a = y1 - y2;
+    b = x2 - x1;
+    c = y1 * (x1 - x2) + x1 * (y2 - y1);
+  }
+
+  Point p1;
+  Point p2;
+
+  float a = 0.0;
+  float b = 0.0;
+  float c = 0.0;
+
+  float deadX = 0.0;
+  float deadY = 0.0;
 };
 
 struct DoorStats
@@ -42,6 +80,6 @@ struct Args
 struct Result
 {
   bool success = false;
-  uint32_t ticksElapsed = 0;
+  float ticksElapsed = 0;
   DoorStats doorStats;
 };

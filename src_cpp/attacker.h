@@ -13,7 +13,7 @@
 class Attacker : public Movable
 {
 public:
-  Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, SDL_Renderer* renderer);
+  Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Attacker();
 
   void Move(float speed) override;
@@ -49,7 +49,7 @@ private:
   uint32_t mWaitTime;
   uint32_t mAttackPeriod;
 
-  void Constrain(float speed) override;
+  // void Constrain(float speed) override;
 
   void SelectDoor();
   void ResetPosition();

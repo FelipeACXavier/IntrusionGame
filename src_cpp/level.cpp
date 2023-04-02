@@ -7,7 +7,8 @@
 
 using json = nlohmann::json;
 
-Level::Level()
+Level::Level(SDL_Renderer* renderer)
+    : mRenderer(renderer)
 {
 }
 
@@ -15,12 +16,22 @@ Level::~Level()
 {
 }
 
-bool Level::Init(const nlohmann::json& config, SDL_Renderer* renderer)
+bool Level::Init(const nlohmann::json& config)
 {
-  LOG_AND_RETURN_ON_FAILURE(CreateDoors(config["doors"], renderer), "Failed to create doors");
-  LOG_AND_RETURN_ON_FAILURE(CreateAttacker(config["attacker"], renderer), "Failed to create attacker");
-  LOG_AND_RETURN_ON_FAILURE(CreateEmployees(config["employees"], renderer), "Failed to create employees");
-  LOG_AND_RETURN_ON_FAILURE(CreateGuards(config["guards"], renderer), "Failed to create guards");
+  for (auto& line : config["walls"])
+  {
+    mWalls.push_back(Line(line["x1"], line["y1"], line["x2"], line["y2"]));
+    if (line.contains("dead_x") && line.contains("dead_y"))
+    {
+      mWalls.back().deadX = line["dead_x"] == "right" ? WIDTH - float(line["x1"]) : float(line["x1"]);
+      mWalls.back().deadY = line["dead_y"] == "bottom" ? HEIGHT - float(line["y1"]) : float(line["y1"]);
+    }
+  }
+
+  LOG_AND_RETURN_ON_FAILURE(CreateDoors(config["doors"], mRenderer), "Failed to create doors");
+  LOG_AND_RETURN_ON_FAILURE(CreateAttacker(config["attacker"], mRenderer), "Failed to create attacker");
+  LOG_AND_RETURN_ON_FAILURE(CreateEmployees(config["employees"], mRenderer), "Failed to create employees");
+  LOG_AND_RETURN_ON_FAILURE(CreateGuards(config["guards"], mRenderer), "Failed to create guards");
 
   return true;
 }
@@ -37,6 +48,12 @@ bool Level::Run()
     guard->Update();
 
   mAttacker->Update();
+
+  SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+  for (auto& wall : mWalls)
+  {
+    SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
+  }
 
   return true;
 }
@@ -82,7 +99,7 @@ bool Level::CreateGuards(const nlohmann::json& config, SDL_Renderer* renderer)
     for (uint32_t i = 0; i < nGuards; ++i)
     {
       index = config["config"].size() == 1 ? 0 : index;
-      mGuards.push_back(std::make_shared<Guard>(i, config["config"][index], movables, renderer));
+      mGuards.push_back(std::make_shared<Guard>(i, config["config"][index], movables, mWalls, renderer));
       index++;
     }
   }
@@ -100,7 +117,7 @@ bool Level::CreateAttacker(const nlohmann::json& config, SDL_Renderer* renderer)
 {
   try
   {
-    mAttacker = std::make_shared<Attacker>(config, mDoors, renderer);
+    mAttacker = std::make_shared<Attacker>(config, mDoors, mWalls, renderer);
     mAttacker->mReachedDoor = mReachedDoor;
     mAttacker->mWasCaught = mWasCaught;
   }
@@ -119,7 +136,7 @@ bool Level::CreateEmployees(const nlohmann::json& config, SDL_Renderer* renderer
   {
     auto nEmployees = config["number_of_employees"];
     for (uint32_t i = 0; i < nEmployees; ++i)
-      mEmployees.push_back(std::make_shared<Employee>(i, config, renderer));
+      mEmployees.push_back(std::make_shared<Employee>(i, config, mWalls, renderer));
   }
   catch (const std::exception& e)
   {

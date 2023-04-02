@@ -10,11 +10,11 @@
 class Employee : public Movable
 {
 public:
-  Employee(uint32_t id, const nlohmann::json& config, SDL_Renderer* renderer);
+  Employee(uint32_t id, const nlohmann::json& config, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Employee();
 
   void Move(float speed) override;
-  void Constrain(float speed) override;
+  // void Constrain(float speed) override;
   void StopCheck() override;
 
 private:

@@ -2,16 +2,18 @@
 
 #include <iostream>
 
-Movable::Movable(int x, int y, SDL_Renderer* renderer)
+#include "helpers.h"
+
+Movable::Movable(int x, int y, const std::vector<Line> walls, SDL_Renderer* renderer)
     : mRenderer(renderer)
     , mIsChecking(false)
+    , mWalls(walls)
 {
 
   mPos.x = x;
   mPos.y = y;
 
-  // std::cout << "Starting movable at " << mPos.x << ", " << mPos.y << std::endl;
-  // mRandom = std::make_unique<Randomizer>(-1, 1);
+  mRandom = std::make_unique<Randomizer>(-1, 1);
   mRandomWidth = std::make_unique<Randomizer>(0, WIDTH);
   mRandomHeight = std::make_unique<Randomizer>(0, HEIGHT);
 }
@@ -47,20 +49,15 @@ bool Movable::IsChecking() const
 
 void Movable::Constrain(float speed)
 {
-  // if (X() > WIDTH || X() < 0)
-  //   mPos.x += -(mDir.x * speed);
-
-  // if (Y() > HEIGHT || Y() < 0)
-  //   mPos.y += -(mDir.y * speed);
-
-  if (X() > WIDTH)
+  // Ensure objects dont leave the scene
+  if (floor(X()) + HALF_TILE > WIDTH)
     mPos.x = WIDTH - HALF_TILE;
-  else if (X() < 0)
+  else if (floor(X()) - HALF_TILE < 0)
     mPos.x = HALF_TILE;
 
-  if (Y() > HEIGHT)
+  if (floor(Y()) + HALF_TILE> HEIGHT)
     mPos.y = HEIGHT - HALF_TILE;
-  else if (Y() < 0)
+  else if (floor(Y()) - HALF_TILE < 0)
     mPos.y = HALF_TILE;
 }
 
@@ -69,19 +66,26 @@ void Movable::Move(float speed)
   if (IsChecking())
     return;
 
-  mPos.x = mRandomWidth->Uniform();
-  mPos.y = mRandomHeight->Uniform();
+  mDir.x = mRandom->Uniform();
+  mDir.y = mRandom->Uniform();
 
-  // mPos.x += (mDir.x * speed);
-  // mPos.y += (mDir.y * speed);
+  Point newPos(mPos.x + (mDir.x * speed), mPos.y + (mDir.y * speed));
+  Point minPoint = Raycast(mPos, newPos, mWalls);
 
-  // std::cout << "Moving to " << mPos.x << ", " << mPos.y << std::endl;
+  if (minPoint == newPos)
+  {
+    mPos = newPos;
+  }
+
+  Constrain(speed);
 }
 
 void Movable::Update()
 {
   Move(mSpeed);
-  // Constrain(mSpeed);
+
+  if (HIDDEN)
+    return;
 
   SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
   // SDL_RenderDrawPoint(mRenderer, mPos.x, mPos.y);

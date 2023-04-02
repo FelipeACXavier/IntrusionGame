@@ -39,7 +39,7 @@ private:
   uint32_t mTicks;
   uint32_t mTotalTicks;
 
-  bool SetupSDL(bool hidden);
+  bool SetupSDL();
   bool SetupGlobals(Args overrides);
 
   void Finished(bool result);

@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <vector>
 
 #include <SDL2/SDL.h>
 
@@ -11,7 +12,7 @@
 class Movable
 {
 public:
-  Movable(int x, int y, SDL_Renderer* renderer);
+  Movable(int x, int y, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Movable();
 
   virtual void Update();
@@ -32,7 +33,9 @@ protected:
   Color mColor;
 
   SDL_Renderer* mRenderer;
+  std::vector<Line> mWalls;
 
+  std::unique_ptr<Randomizer> mRandom;
   std::unique_ptr<Randomizer> mRandomWidth;
   std::unique_ptr<Randomizer> mRandomHeight;
 

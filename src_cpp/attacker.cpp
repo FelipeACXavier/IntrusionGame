@@ -2,8 +2,8 @@
 
 #include <string>
 
-Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, SDL_Renderer* renderer)
-  : Movable(0, 0, renderer)
+Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, const std::vector<Line> walls, SDL_Renderer* renderer)
+  : Movable(0, 0, walls, renderer)
   , mDoors(doors)
   , mStaying(true)
   , mCanAttack(false)
@@ -68,11 +68,12 @@ void Attacker::SelectDoor()
 
 void Attacker::ResetPosition()
 {
-  // mPos.x = mRandomWidth->Uniform();
-  // mPos.y = mRandomHeight->Uniform();
+  printf("Reset position\n");
+  mPos.x = mRandomWidth->Uniform();
+  mPos.y = mRandomHeight->Uniform();
 
   // Constrain(mSpeed);
-  Movable::Move(mSpeed);
+  // Movable::Move(mSpeed);
 
   mStaying = true;
   mCanAttack = false;
@@ -83,18 +84,18 @@ void Attacker::ResetPosition()
   mStayTime = mStayPeriod;
 }
 
-void Attacker::Constrain(float speed)
-{
-  if (X() > WIDTH)
-    mPos.x = WIDTH - HALF_TILE;
-  else if (X() < 0)
-    mPos.x = HALF_TILE;
+// void Attacker::Constrain(float speed)
+// {
+//   if (X() > WIDTH)
+//     mPos.x = WIDTH - HALF_TILE;
+//   else if (X() < 0)
+//     mPos.x = HALF_TILE;
 
-  if (Y() > HEIGHT)
-    mPos.y = HEIGHT - HALF_TILE;
-  else if (Y() < 0)
-    mPos.y = HALF_TILE;
-}
+//   if (Y() > HEIGHT)
+//     mPos.y = HEIGHT - HALF_TILE;
+//   else if (Y() < 0)
+//     mPos.y = HALF_TILE;
+// }
 
 void Attacker::Move(float speed)
 {

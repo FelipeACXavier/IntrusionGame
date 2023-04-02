@@ -30,7 +30,7 @@ void Statistics::UpdateStats(uint32_t iteration, Result result)
   mStats[mBatchIndex]->doorsBlocked += float(result.doorStats.failures);
 
   mStats[mBatchIndex]->pSamples.push_back(PValue(*mStats[mBatchIndex]));
-  mStats[mBatchIndex]->qSamples.push_back(result.ticksElapsed / 60 * DAY_LENGTH);
+  mStats[mBatchIndex]->qSamples.push_back(result.ticksElapsed / float(DAY_LENGTH * 60));
 
   IterationDone(iteration, *mStats[mBatchIndex]);
 }

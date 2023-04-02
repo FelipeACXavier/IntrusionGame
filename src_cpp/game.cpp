@@ -6,6 +6,7 @@
 #include "settings.h"
 
 // Globals
+bool HIDDEN;
 uint32_t FPS;
 uint32_t WIDTH;
 uint32_t HEIGHT;
@@ -27,11 +28,21 @@ Game::Game(const nlohmann::json& config)
 
 Game::~Game()
 {
-  if (mWindow)
-    SDL_DestroyWindow(mWindow);
+  // Clean up SDL pointers
+  if (mFont)
+    TTF_CloseFont(mFont);
 
   if (mText)
     SDL_DestroyTexture(mText);
+
+  if (mTexture)
+    SDL_DestroyTexture(mTexture);
+
+  if (mRenderer)
+    SDL_DestroyRenderer(mRenderer);
+
+  if (mWindow)
+    SDL_DestroyWindow(mWindow);
 
   TTF_Quit();
   SDL_Quit();
@@ -52,7 +63,7 @@ bool Game::Init(Args overrides)
   RETURN_ON_FAILURE(SetupGlobals(overrides));
 
   // Initialise SDL
-  RETURN_ON_FAILURE(SetupSDL(overrides.hidden));
+  RETURN_ON_FAILURE(SetupSDL());
 
   return Reset();
 }
@@ -69,17 +80,19 @@ bool Game::SetupGlobals(Args overrides)
   WIDTH = float(mConfig["width"]) * TILE_SIZE;
   HEIGHT = float(mConfig["height"]) * TILE_SIZE;
 
+  HIDDEN = overrides.hidden;
+
   mTotalTicks = DAY_LENGTH * 60 * 60;
 
   return true;
 }
 
-bool Game::SetupSDL(bool hidden)
+bool Game::SetupSDL()
 {
   SDL_DisplayMode DM;
   SDL_GetCurrentDisplayMode(0, &DM);
 
-  uint32_t flags = hidden ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
+  uint32_t flags = HIDDEN ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
   mWindow = SDL_CreateWindow("Intrusion game", (DM.w - WIDTH) / 2, (DM.h - HEIGHT) / 2, WIDTH, HEIGHT, flags);
   LOG_AND_RETURN_ON_FAILURE(mWindow, "Failed to create window");
 
@@ -87,6 +100,8 @@ bool Game::SetupSDL(bool hidden)
   LOG_AND_RETURN_ON_FAILURE(mRenderer, "Failed to create window");
 
   mFont = TTF_OpenFont("/usr/share/fonts/fonts/ttf/JetBrainsMonoNL-SemiBold.ttf", 18);
+  if (mFont == NULL)
+    mFont = TTF_OpenFont("/usr/share/fonts/fonts/truetype/open-sans/OpenSans-Regular.ttf", 18);
 
   // Rectagle used to display UI
   mTextRect.x = 10;
@@ -102,11 +117,11 @@ bool Game::Reset()
   mTicks = 0;
 
   // (Re)Create level
-  mLevel = std::make_unique<Level>();
+  mLevel = std::make_unique<Level>(mRenderer);
   mLevel->mReachedDoor = [this]{ Finished(true); };
   mLevel->mWasCaught = [this]{ Finished(false); };
 
-  return mLevel->Init(mConfig, mRenderer);
+  return mLevel->Init(mConfig);
 }
 
 bool Game::Run()
@@ -138,10 +153,12 @@ bool Game::Run()
       ++mTicks;
     }
 
+    if (HIDDEN)
+      continue;
+
     RenderUI();
 
     SDL_RenderPresent(mRenderer);
-    // wait before processing the next frame
     SDL_Delay(1000 / FPS);
   }
 
@@ -171,9 +188,7 @@ void Game::Finished(bool result)
 
 Result Game::GetResult()
 {
-  DoorStats doors = mLevel->GetResult();
-
-  return Result{mResult, mTicks / 60, doors};
+  return Result{mResult, float(mTicks) / 60, mLevel->GetResult()};
 }
 
 bool Game::IsDone() const

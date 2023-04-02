@@ -1,12 +1,26 @@
 #include "employee.h"
 
-Employee::Employee(uint32_t id, const nlohmann::json& config, SDL_Renderer* renderer)
-    : Movable(0, 0, renderer)
+Employee::Employee(uint32_t id, const nlohmann::json& config, const std::vector<Line> walls, SDL_Renderer* renderer)
+    : Movable(0, 0, walls, renderer)
     , mId(id)
     , mWaitTime(0)
 {
-  mPos.x = mRandomWidth->Uniform();
-  mPos.y = mRandomHeight->Uniform();
+  bool ok;
+  do
+  {
+    ok = true;
+    mPos.x = mRandomWidth->Uniform();
+    mPos.y = mRandomHeight->Uniform();
+    for (const auto& wall : walls)
+    {
+      if (mPos.x > wall.p1.x && mPos.x < wall.p1.x + wall.deadX &&
+          mPos.y > wall.p1.y && mPos.y < wall.p1.y + wall.deadY)
+        ok = false;
+    }
+  } while (!ok);
+
+  // mPos.x = mRandomWidth->Uniform();
+  // mPos.y = mRandomHeight->Uniform();
 
   mSpeed = float(config["speed"]) * TILE_SIZE;
 
@@ -46,18 +60,18 @@ void Employee::Move(float speed)
   mWaitTime = mRandomWait->Uniform();
 }
 
-void Employee::Constrain(float speed)
-{
-  if (X() > WIDTH)
-    mPos.x = WIDTH - HALF_TILE;
-  else if (X() < 0)
-    mPos.x = HALF_TILE;
+// void Employee::Constrain(float speed)
+// {
+//   if (X() > WIDTH)
+//     mPos.x = WIDTH - HALF_TILE;
+//   else if (X() < 0)
+//     mPos.x = HALF_TILE;
 
-  if (Y() > HEIGHT)
-    mPos.y = HEIGHT - HALF_TILE;
-  else if (Y() < 0)
-    mPos.y = HALF_TILE;
-}
+//   if (Y() > HEIGHT)
+//     mPos.y = HEIGHT - HALF_TILE;
+//   else if (Y() < 0)
+//     mPos.y = HALF_TILE;
+// }
 
 void Employee::StopCheck()
 {

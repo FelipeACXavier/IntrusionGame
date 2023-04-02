@@ -15,10 +15,10 @@
 class Level
 {
 public:
-  Level();
+  Level(SDL_Renderer* renderer);
   ~Level();
 
-  bool Init(const nlohmann::json& config, SDL_Renderer* renderer);
+  bool Init(const nlohmann::json& config);
   bool Run();
 
   DoorStats GetResult();
@@ -32,6 +32,10 @@ private:
   std::vector<PDoor> mDoors;
   std::vector<PGuard> mGuards;
   std::vector<PEmployee> mEmployees;
+
+  std::vector<Line> mWalls;
+
+  SDL_Renderer* mRenderer;
 
   bool CreateDoors(const nlohmann::json& config, SDL_Renderer* renderer);
   bool CreateGuards(const nlohmann::json& config, SDL_Renderer* renderer);
