@@ -7,17 +7,28 @@
   "cycles_per_frame": 300,
 
   "tile_size": 32,
-  "width": 10,
-  "height": 8.5,
+  "width": 8.5,
+  "height": 10,
   "day_duration": 8,
 
   "test_type": "q-test",
   "observed_mean": 0.762841,
 
+  "walls": [
+    { "x1" : 0, "y1": 0, "x2": 0, "y2": 320},
+    { "x1" : 0, "y1": 319, "x2": 272, "y2": 319},
+    { "x1" : 271, "y1": 0, "x2": 271, "y2": 319},
+    { "x1" : 0, "y1": 0, "x2": 272, "y2": 0},
+    { "x1" : 130, "y1": 208, "x2": 130, "y2": 320, "dead_x": "right", "dead_y": "down" },
+    { "x1" : 130, "y1": 208, "x2": 272, "y2": 208},
+    { "x1" : 130, "y1": 0, "x2": 130, "y2": 112 },
+    { "x1" : 0, "y1": 112, "x2": 45, "y2": 112 },
+    { "x1" : 85, "y1": 112, "x2": 130, "y2": 112 }
+  ],
   "attacker": {
-    "x": 10,
-    "y": 10,
-    "speed": 0.32,
+    "x": 50,
+    "y": 250,
+    "speed": 1.0,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
@@ -30,7 +41,7 @@
     "min_stay_time": 10,
     "randomization": 64,
     "behaviour": "stay",
-    "speed": 1.0
+    "speed": 0.5
   },
   "guards": {
     "number_of_guards": 1,
@@ -44,7 +55,7 @@
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
-        "check_speed": 0.3,
+        "check_speed": 0.1,
         "stroll_speed": 0.1
       }
     ]
