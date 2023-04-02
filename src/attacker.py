@@ -42,6 +42,10 @@ class Attacker(Entity):
     self.stay_time = self.stay_period
     self.wait_time = self.attack_period
 
+    self.goalx = 0
+    self.goaly = 0
+    self.set_goal()
+
     self.done_callback = done_callback
     if settings.DEBUG:
       print("Created attacker at {} waiting {} minutes".format(self.pos, self.wait_time / 60))
@@ -60,6 +64,10 @@ class Attacker(Entity):
     self.door = random.choice(self.doors)
     if settings.DEBUG:
       print("Selected door {}: ({},{})".format(self.door.id(), self.door.x(), self.door.y()))
+
+  def set_goal(self):
+      self.goalx = random.randint(0, settings.WIDTH)
+      self.goaly = random.randint(0, settings.HEIGHT)
 
   def constrain(self, speed):
       if self.pos.x > settings.WIDTH:
@@ -146,8 +154,23 @@ class Attacker(Entity):
           self.can_attack = False
 
     else:
-      super().move(self.speed)
+        d_x = self.goalx - self.x()
+        d_y = self.goaly - self.y()
+        if (abs(d_x) > settings.HALF_TILE or abs(d_y) > settings.HALF_TILE):
+            if self.behaviour == "walk":
+                self.direction.x = d_x
+                self.direction.y = d_y
+                self.direction = self.direction.normalize()
 
-    # Stays in location for some time
-    if self.staying:
-      self.stay_time = self.stay_period
+                self.pos.x += self.direction.x * speed
+                self.pos.y += self.direction.y * speed
+            elif self.behaviour == "jump":
+                self.pos.x = self.goalx
+                self.pos.y = self.goaly
+            else:
+                raise Exception("Unknown attacker behaviour")
+        else:
+          self.set_goal()
+          self.stay_time = self.stay_period * 60
+
+        

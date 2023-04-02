@@ -7,8 +7,8 @@
   "cycles_per_frame": 200,
 
   "tile_size": 32,
-  "width": 16.5,
-  "height": 16,
+  "width": 7,
+  "height": 37.5,
   "day_duration": 8,
 
   "test_type": "q-test",
@@ -21,7 +21,7 @@
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "jump",
+    "behaviour": "walk",
     "strategy": "q-test"
   },
   "employees": {
