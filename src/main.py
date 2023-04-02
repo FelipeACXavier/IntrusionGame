@@ -23,14 +23,12 @@ parser = argparse.ArgumentParser(
                     epilog='For research purpose only, see: https://github.com/FelipeACXavier/IntrusionGame')
 
 parser.add_argument('-c', dest="config", help="Specify the simulation config", type=str)
-parser.add_argument('-f', dest="data", help="Run only analysis from given file", type=str)
-parser.add_argument('-d', dest="directory", help="Run all configs in directory", type=str)
 parser.add_argument('-i', dest="iterations", help="Overwrite config iterations", type=int)
-parser.add_argument('-r', dest="runs", default=1, help="How many runs to average over", type=int)
-parser.add_argument('-e', dest="observed", help="Expected Z-test mean", type=float)
-parser.add_argument('--confidence', dest="confidence", default=0.75, help="Expected Z-test mean", type=float)
-parser.add_argument('--fps', dest="fps", help="Overwrite config fps", type=int)
+parser.add_argument('-b', dest="runs", default=1, help="Override number of batches in config", type=int)
+parser.add_argument('-f', '--fps', dest="fps", help="Overwrite config fps", type=int)
 parser.add_argument('--cycles', dest="cycles", help="Overwrite config cycles per frame", type=int)
+parser.add_argument('--stats', dest="data", help="Run only analysis from given file", type=str)
+parser.add_argument('--confidence', dest="confidence", default=0.75, help="Expected Z-test mean", type=float)
 parser.add_argument("--hidden", dest="hidden", action="store_true")
 
 def run_simulation(config_file, runs=None, fps=None, cycles=None, hidden=False):
@@ -135,15 +133,6 @@ if __name__ == "__main__":
                 f.write(str(v) + "\n")
 
     # =========================================================
-    # Run all levels in directory
-    elif args.directory != None:
-        for filename in os.listdir(args.directory):
-            config_file = os.path.join(args.directory, filename)
-            # Checking if it is a file
-            if not os.path.isfile(config_file):
-                continue
-
-            run_simulation(config_file, args.iterations, args.fps, args.cycles, args.hidden)
     else:
         print("No configuration file provided")
 

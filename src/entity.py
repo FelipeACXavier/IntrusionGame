@@ -21,7 +21,7 @@ class Entity:
     def start_check(self):
       self.is_checking = True
 
-    def stop_check(self):
+    def stop_check(self, speed=None):
       self.is_checking = False
 
     def is_being_checked(self):
