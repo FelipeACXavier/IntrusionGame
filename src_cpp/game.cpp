@@ -30,22 +30,6 @@ Game::Game(const nlohmann::json& config)
 
 Game::~Game()
 {
-  // Clean up SDL pointers
-  if (mFont)
-    TTF_CloseFont(mFont);
-
-  if (mText)
-    SDL_DestroyTexture(mText);
-
-  if (mTexture)
-    SDL_DestroyTexture(mTexture);
-
-  if (mRenderer)
-    SDL_DestroyRenderer(mRenderer);
-
-  if (mWindow)
-    SDL_DestroyWindow(mWindow);
-
   TTF_Quit();
   SDL_Quit();
 }
@@ -142,8 +126,11 @@ bool Game::Run()
       }
     }
 
-    SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(mRenderer);
+    if (!HIDDEN)
+    {
+      SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+      SDL_RenderClear(mRenderer);
+    }
 
     for (uint32_t i = 0; !IsDone() && i < CYCLES_PER_FRAME; ++i)
     {

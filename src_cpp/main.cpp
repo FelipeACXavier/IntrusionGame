@@ -86,7 +86,7 @@ int main (int argc, char **argv)
   {
     std::unique_ptr<Game> game = std::make_unique<Game>(configs);
     if (!game->Init(args))
-      return 1;
+      break;
 
     stats.NewBatch();
     for (uint32_t j = 0; running && j < iterations; ++j)
@@ -102,9 +102,12 @@ int main (int argc, char **argv)
 
   printf("Done running %u simulations\n", args.batches * iterations);
 
-  stats.Save();
+  std::string baseName = configFile.substr(configFile.find_last_of("/\\") + 1);
+  std::string fileWithoutExtension = baseName.substr(0, baseName.find_last_of('.'));
+  stats.Save("../data/" + fileWithoutExtension + ".txt");
+
   observed = observed < 0.0 ? float(configs["observed_mean"]) : observed;
-  stats.ZTest(configs["test_type"], confidence, observed);
+  stats.ZTest(confidence, observed);
 
   return 0;
 }

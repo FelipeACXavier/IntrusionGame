@@ -37,6 +37,8 @@ private:
 
   SDL_Renderer* mRenderer;
 
+  void UpdateWalls() const;
+
   bool CreateWalls(const nlohmann::json& config);
   bool CreateDoors(const nlohmann::json& config, SDL_Renderer* renderer);
   bool CreateGuards(const nlohmann::json& config, SDL_Renderer* renderer);

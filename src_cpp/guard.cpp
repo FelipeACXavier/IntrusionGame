@@ -59,7 +59,7 @@ Guard::Guard(uint32_t id, const nlohmann::json& config,
   float minMissionTime = float(config["min_mission_time"]) * 60;
   mRandomMission = std::make_unique<Randomizer>(minMissionTime, maxMissionTime);
 
-  Randomizer intermission(0, mInterMissionPeriod);
+  Randomizer intermission(0, mInterMissionPeriod / 2);
   mWaitForMissionTime = intermission.Uniform();
 
   mMovablesPerCheck = uint32_t(config["entities_per_check"]);
@@ -76,10 +76,10 @@ void Guard::Update()
   if (HIDDEN)
     return;
 
-  if (!mInMission)
-    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-
-  DrawCircle(mPos.x, mPos.y, mShowRadius);
+  // Uncomment to see radius of detection
+  // if (!mInMission)
+  //   SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+  // DrawCircle(mPos.x, mPos.y, mShowRadius);
 }
 
 void Guard::Move(float speed)

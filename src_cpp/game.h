@@ -4,7 +4,7 @@
 #include <memory>
 
 #include <nlohmann/json.hpp>
-#include <SDL2/SDL.h> /* macOS- and GNU/Linux-specific */
+#include <SDL2/SDL.h>
 #include "SDL2/SDL_ttf.h"
 
 #include "level.h"
@@ -29,7 +29,7 @@ private:
   SDL_Window *mWindow;
   SDL_Renderer *mRenderer;
   SDL_Texture *mTexture, *mText;
-  TTF_Font* mFont;
+  TTF_Font  *mFont;
   SDL_Rect mTextRect;
 
   nlohmann::json mConfig;

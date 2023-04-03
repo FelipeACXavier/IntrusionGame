@@ -40,9 +40,7 @@ bool Level::Run()
 
   mAttacker->Update();
 
-  SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-  for (auto& wall : mWalls)
-    SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
+  UpdateWalls();
 
   return true;
 }
@@ -57,6 +55,16 @@ DoorStats Level::GetResult()
     stats.failures += s.failures;
   }
   return stats;
+}
+
+void Level::UpdateWalls() const
+{
+  if (HIDDEN)
+    return;
+
+  SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+  for (auto& wall : mWalls)
+    SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
 }
 
 bool Level::CreateWalls(const nlohmann::json& config)
@@ -92,8 +100,6 @@ bool Level::CreateWalls(const nlohmann::json& config)
         mWalls.back().deadzone.y = float(line["y1"]);
         mWalls.back().deadzone.h = float(line["y2"]) - float(line["y1"]);
       }
-
-      printf("Created line with deadzone: %d %d %d %d\n", mWalls.back().deadzone.x, mWalls.back().deadzone.y, mWalls.back().deadzone.w, mWalls.back().deadzone.h);
     }
   }
   catch (const std::exception& e)

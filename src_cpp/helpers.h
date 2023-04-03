@@ -17,7 +17,7 @@
   {                                      \
     if (!c)                              \
     {                                    \
-      printf(m);                         \
+      printf("%s\n", m);                 \
       return false;                      \
     }                                    \
   } while (0)

@@ -19,9 +19,9 @@ public:
   void NewBatch();
   void Dump() const;
 
-  void Save() const;
+  bool Save(const std::string& filename) const;
 
-  bool ZTest(const std::string& type, const std::string& confidence, float observed) const;
+  bool ZTest(const std::string& confidence, float observed) const;
 
   float Mean(const std::vector<float>& samples) const;
   float Variance(const std::vector<float>& samples) const;
@@ -42,6 +42,13 @@ private:
     std::vector<float> qSamples;
   };
 
+  struct TestStats
+  {
+    float mean = 0.0;
+    float variance = 0.0;
+    std::vector<float> samples;
+  };
+
   std::vector<std::shared_ptr<GameStats>> mStats;
 
   enum class TestType
@@ -59,6 +66,8 @@ private:
 
    std::chrono::_V2::system_clock::time_point mStart;
    std::chrono::_V2::system_clock::time_point mPreviousEnd;
+
+  TestStats GetStats() const;
 
   float PValue(const GameStats& stat) const;
   float QValue(const GameStats& stat) const;
