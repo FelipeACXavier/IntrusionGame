@@ -40,7 +40,7 @@
   ],
   "attacker": {
     "x": 10,
-    "y": 10,
+    "y": 100,
     "speed": 1.0,
     "randomization": 0,
     "attack_period": 5,
@@ -69,7 +69,7 @@
         "min_mission_time": 5,
         "behaviour": "stroll",
         "check_speed": 1.5,
-        "stroll_speed": 0.6
+        "stroll_speed": 0.05
       }
     ]
   },

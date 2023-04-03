@@ -42,12 +42,12 @@
   "attacker": {
     "x": 200,
     "y": 290,
-    "speed": 3.5,
+    "speed": 3.0,
     "attack_speed": 1.0,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "walk",
+    "behaviour": "jump",
     "strategy": "p-test"
   },
   "employees": {

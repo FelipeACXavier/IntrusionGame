@@ -28,11 +28,11 @@
   "attacker": {
     "x": 50,
     "y": 250,
-    "speed": 1.0,
+    "speed": 0.05,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "jump",
+    "behaviour": "walk",
     "strategy": "q-test"
   },
   "employees": {
@@ -55,8 +55,8 @@
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
-        "check_speed": 0.1,
-        "stroll_speed": 0.1
+        "check_speed": 0.03,
+        "stroll_speed": 0.0
       }
     ]
   },
