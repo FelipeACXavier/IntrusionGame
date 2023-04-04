@@ -1,0 +1,59 @@
+{
+  "level": "Level 2 q-test",
+  "log_debug": false,
+
+  "fps": 500,
+  "iterations": 100,
+  "cycles_per_frame": 200,
+
+  "tile_size": 16,
+  "width": 16,
+  "height": 31.5,
+  "day_duration": 8,
+
+  "test_type": "q-test",
+  "observed_mean": 0.555778,
+
+  "walls": [
+    { "x1": 0,   "y1": 0,   "x2": 0,   "y2": 503},
+    { "x1": 0,   "y1": 503, "x2": 256, "y2": 503},
+    { "x1": 255, "y1": 0,   "x2": 255, "y2": 503},
+    { "x1": 0,   "y1": 0,   "x2": 256, "y2":   0}
+  ],
+  "attacker": {
+    "x": 10,
+    "y": 100,
+    "speed": 1.0,
+    "randomization": 0,
+    "attack_period": 5,
+    "stay_period": 0.5,
+    "behaviour": "walk",
+    "strategy": "q-test"
+  },
+  "employees": {
+    "number_of_employees": 53,
+    "max_stay_time": 60,
+    "min_stay_time": 10,
+    "randomization": 128,
+    "behaviour": "walk",
+    "speed": 1.0
+  },
+  "guards": {
+    "number_of_guards": 3,
+    "config": [
+      {
+        "check_radius": 2.5,
+        "entities_per_check": 1,
+        "max_check_time": 3,
+        "min_check_time": 1,
+        "number_of_missions": 5,
+        "max_mission_time": 15,
+        "min_mission_time": 5,
+        "behaviour": "stroll",
+        "check_speed": 1.5,
+        "stroll_speed": 0.05
+      }
+    ]
+  },
+  "doors": []
+}

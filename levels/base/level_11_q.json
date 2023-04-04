@@ -1,9 +1,9 @@
 {
-  "level": "Level 1.1 p-test",
+  "level": "Level 1.1 q-test",
   "log_debug": false,
 
   "fps": 120,
-  "iterations": 100,
+  "iterations": 20,
   "cycles_per_frame": 5000,
 
   "tile_size": 32,
@@ -11,8 +11,8 @@
   "height": 12.625,
   "day_duration": 8,
 
-  "test_type": "p-test",
-  "observed_mean": 0.535921,
+  "test_type": "q-test",
+  "observed_mean": 0.762841,
 
   "walls": [
     { "x1" : 0,   "y1": 0,   "x2": 0,   "y2": 404},
@@ -26,38 +26,39 @@
     { "x1" : 85,  "y1": 127, "x2": 128, "y2": 127 }
   ],
   "attacker": {
-    "x": 10,
-    "y": 208,
-    "speed": 2.0,
-    "attack_speed": 0.3,
+    "x": 50,
+    "y": 250,
+    "speed": 1.0,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
-    "behaviour": "jump",
-    "strategy": "p-test"
+    "behaviour": "walk",
+    "strategy": "q-test"
   },
   "employees": {
-    "number_of_employees": 0,
+    "number_of_employees": 22,
     "max_stay_time": 60,
     "min_stay_time": 10,
-    "randomization": 64
+    "randomization": 64,
+    "behaviour": "walk",
+    "speed": 1.0
   },
   "guards": {
-    "number_of_guards": 0,
-    "config": []
+    "number_of_guards": 1,
+    "config": [
+      {
+        "check_radius": 2.5,
+        "entities_per_check": 1,
+        "max_check_time": 3,
+        "min_check_time": 1,
+        "number_of_missions": 5,
+        "max_mission_time": 15,
+        "min_mission_time": 5,
+        "behaviour": "stroll",
+        "check_speed": 1.0,
+        "stroll_speed": 1.0
+      }
+    ]
   },
-  "doors": [
-    {
-      "x": 1.0,
-      "y": 0.45,
-      "type": "inter_level",
-      "direction": "right",
-      "inter_opening_time": 5,
-      "short_opening_probability": 0.525,
-      "max_open_time": 13,
-      "min_open_time": 10,
-      "max_short_open_time": 1.5,
-      "min_short_open_time": 0.5
-    }
-  ]
+  "doors": []
 }

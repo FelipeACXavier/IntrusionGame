@@ -1,0 +1,82 @@
+{
+  "level": "Level 3 p-test",
+  "log_debug": false,
+
+  "fps": 500,
+  "iterations": 500,
+  "cycles_per_frame": 200,
+
+  "tile_size": 16,
+  "width": 28,
+  "height": 40,
+  "day_duration": 8,
+
+  "test_type": "p-test",
+  "observed_mean": 0.148143,
+
+  "walls": [
+    { "x1": 0,   "y1": 0,   "x2": 0,   "y2": 639},
+    { "x1": 0,   "y1": 639, "x2": 447, "y2": 639},
+    { "x1": 447, "y1": 0,   "x2": 447, "y2": 639},
+    { "x1": 0,   "y1": 0,   "x2": 447, "y2":   0}
+  ],
+  "attacker": {
+    "x": 200,
+    "y": 290,
+    "speed": 3.0,
+    "attack_speed": 1.0,
+    "randomization": 0,
+    "attack_period": 5,
+    "stay_period": 0.5,
+    "behaviour": "jump",
+    "strategy": "p-test"
+  },
+  "employees": {
+    "number_of_employees": 0,
+    "max_stay_time": 10,
+    "min_stay_time": 1,
+    "randomization": 64
+  },
+  "guards": {
+    "number_of_guards": 0,
+    "config": []
+  },
+  "doors": [
+    {
+      "x": 0.0,
+      "y": 0.775,
+      "type": "inter_level",
+      "direction": "left",
+      "inter_opening_time": 10,
+      "short_opening_probability": 0.95,
+      "max_open_time": 11,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    },
+    {
+      "x": 0.0,
+      "y": 0.95,
+      "type": "inter_level",
+      "direction": "left",
+      "inter_opening_time": 10,
+      "short_opening_probability": 0.95,
+      "max_open_time": 11,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    },
+    {
+      "x": 0.835,
+      "y": 0.215,
+      "type": "inter_level",
+      "direction": "left",
+      "inter_opening_time": 10,
+      "short_opening_probability": 0.95,
+      "max_open_time": 11,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "level": "Level 1.2 p-test",
+  "log_debug": false,
+
+  "fps": 500,
+  "iterations": 100,
+  "cycles_per_frame": 4000,
+
+  "tile_size": 32,
+  "width": 8,
+  "height": 18.875,
+  "day_duration": 8,
+
+  "test_type": "p-test",
+  "observed_mean": 0.533090,
+
+  "walls": [
+    { "x1" : 0,   "y1": 0,   "x2": 0,   "y2": 603},
+    { "x1" : 0,   "y1": 603, "x2": 256, "y2": 603},
+    { "x1" : 255, "y1": 0,   "x2": 255, "y2": 603},
+    { "x1" : 0,   "y1": 0,   "x2": 256, "y2":   0},
+
+    { "x1" : 128, "y1": 0,   "x2": 128, "y2": 128, "dead_x" : "left", "dead_y" : "top"},
+    { "x1" : 0,   "y1": 128, "x2": 172, "y2": 128},
+    { "x1" : 212, "y1": 128, "x2": 256, "y2": 128},
+
+    { "x1" : 0,   "y1": 256, "x2": 108, "y2": 256},
+    { "x1" : 148, "y1": 256, "x2": 256, "y2": 256},
+
+    { "x1" : 0,   "y1": 476, "x2": 128, "y2": 476},
+    { "x1" : 128, "y1": 476, "x2": 128, "y2": 510},
+    { "x1" : 128, "y1": 550, "x2": 128, "y2": 604}
+  ],
+  "attacker": {
+    "x": 10,
+    "y": 320,
+    "speed": 8,
+    "attack_speed": 3.0,
+    "randomization": 0,
+    "attack_period": 5,
+    "stay_period": 0.5,
+    "behaviour": "walk",
+    "strategy": "p-test"
+  },
+  "employees": {
+    "number_of_employees": 0,
+    "max_stay_time": 10,
+    "min_stay_time": 1,
+    "randomization": 64
+  },
+  "guards": {
+    "number_of_guards": 0,
+    "config": []
+  },
+  "doors": [
+    {
+      "x": 1.0,
+      "y": 0.55,
+      "type": "inter_level",
+      "direction": "right",
+      "inter_opening_time": 5,
+      "inter_opening_deviation": 1.78,
+      "short_opening_probability": 0.5,
+      "max_open_time": 13,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    }
+  ]
+}
