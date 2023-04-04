@@ -5,6 +5,7 @@
 #include <argumentum/argparse.h>
 
 #include "game.h"
+#include "helpers.h"
 #include "statistics.h"
 
 using namespace argumentum;
@@ -14,6 +15,7 @@ int main (int argc, char **argv)
 {
   Args args;
   std::string configFile;
+  std::string outDirectory;
 
   // Only used with the --stats option
   bool analysis;
@@ -26,6 +28,10 @@ int main (int argc, char **argv)
   params.add_parameter(configFile, "-c", "--config")
     .nargs(1)
     .help("Config file to be used");
+  params.add_parameter(outDirectory, "--out-dir")
+    .nargs(1)
+    .absent("../data/")
+    .help("Output directory");
   params.add_parameter(args.iterations, "-i")
     .nargs(1)
     .absent(0)
@@ -70,8 +76,13 @@ int main (int argc, char **argv)
   }
 
   std::ifstream f(configFile);
-  auto configs = json::parse(f);
+  if (!f.is_open())
+  {
+    printf("Could not open file: %s\n", configFile.c_str());
+    return 1;
+  }
 
+  auto configs = json::parse(f);
   bool running = true;
   uint32_t iterations = args.iterations > 0 ? args.iterations : uint32_t(configs["iterations"]);
 
@@ -102,9 +113,8 @@ int main (int argc, char **argv)
 
   printf("Done running %u simulations\n", args.batches * iterations);
 
-  std::string baseName = configFile.substr(configFile.find_last_of("/\\") + 1);
-  std::string fileWithoutExtension = baseName.substr(0, baseName.find_last_of('.'));
-  stats.Save("../data/" + fileWithoutExtension + ".txt");
+  std::string fileWithoutExtension = GetFilename(configFile);
+  stats.Save(outDirectory + fileWithoutExtension + ".txt");
 
   observed = observed < 0.0 ? float(configs["observed_mean"]) : observed;
   stats.ZTest(confidence, observed);

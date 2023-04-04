@@ -19,13 +19,14 @@ Door::Door(uint32_t id, const nlohmann::json& config, SDL_Renderer* renderer)
 
   float maxOpenTime = float(config["max_open_time"]) * 60;
   float minOpenTime = float(config["min_open_time"]) * 60;
-  float interDuration = float(config["inter_opening_time"]) * 60;
   float maxShortOpenTime = float(config["max_short_open_time"]) * 60;
   float minShortOpenTime = float(config["min_short_open_time"]) * 60;
+  float interOpeningDuration = float(config["inter_opening_time"]) * 60;
+  float interOpeningDeviation = config.contains("inter_opening_deviation") ? float(config["inter_opening_deviation"]) * 60 : 1;
 
   mShortOpeningProbability = 100 * float(config["short_opening_probability"]);
 
-  mClosingRandom = std::make_unique<Randomizer>(interDuration, 1);
+  mClosingRandom = std::make_unique<Randomizer>(interOpeningDuration, interOpeningDeviation);
   mShortOpeningRandom = std::make_unique<Randomizer>(minShortOpenTime, maxShortOpenTime);
   mLongOpeningRandom = std::make_unique<Randomizer>(minOpenTime, maxOpenTime);
 }

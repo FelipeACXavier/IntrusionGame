@@ -1,9 +1,13 @@
 #pragma once
 
-#include <cmath>
-#include <vector>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <SDL2/SDL.h>
+
+#include <cmath>
+#include <string>
+#include <vector>
 
 #define RETURN_ON_FAILURE(c)             \
   do                                     \
@@ -22,19 +26,33 @@
     }                                    \
   } while (0)
 
-static bool checkCollision(float a, float b, float c, float& x, float& y, int radius)
+static bool CreateDirectory(const std::string& path)
 {
-  // Finding the distance of line from center.
-  float dist = abs(a * x + b * y + c) / sqrt(a * a + b * b);
-
-  // Checking if the distance is less than,
-  // greater than or equal to radius.
-  x = (b*(b*x - a*y) - a*c) / (a*a + b*b);
-  y = (a*(-b*x + a*y) - b*c) / (a*a + b*b);
-
-  return (radius >= dist);
+  int r = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  return (r == 0 || errno == EEXIST);
 }
 
+static bool DoesFileExist(const std::string& file)
+{
+  return (access(file.c_str(), F_OK) != -1);
+}
+
+static std::string RemoveFilename(const std::string& path)
+{
+  size_t pos = path.find_last_of('/');
+  if (pos == path.npos)
+    return std::string("./");
+  else
+    return path.substr(0, pos + 1);
+}
+static std::string GetFilename(const std::string& path)
+{
+  size_t pos = path.find_last_of('/');
+  auto fileWithExtension = pos == path.npos ? path : path.substr(pos + 1, path.npos);
+
+  pos = fileWithExtension.find_last_of('.');
+  return pos == path.npos ? fileWithExtension : fileWithExtension.substr(0, pos);
+}
 static float Distance(float x1, float y1, float x2, float y2)
 {
   return std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2);

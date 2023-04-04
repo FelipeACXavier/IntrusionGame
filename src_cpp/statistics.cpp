@@ -40,14 +40,14 @@ void Statistics::UpdateStats(uint32_t iteration, Result result)
 
 void Statistics::IterationDone(uint32_t iteration, const GameStats& stat)
 {
-  auto now = std::chrono::system_clock::now();
-  if (mType == TestType::P_TEST)
-    printf("Attempt %u has p=%.6f\n", iteration, PValue(stat));
-  else
-    printf("Attempt %u has q=%.6f\n", iteration, QValue(stat));
+  // auto now = std::chrono::system_clock::now();
+  // if (mType == TestType::P_TEST)
+  //   printf("Attempt %u has p=%.6f\n", iteration, PValue(stat));
+  // else
+  //   printf("Attempt %u has q=%.6f\n", iteration, QValue(stat));
 
   // printf("Iteration done in %ld milliseconds\n", std::chrono::duration_cast<std::chrono::milliseconds>(now - mPreviousEnd).count());
-  mPreviousEnd = now;
+  // mPreviousEnd = now;
 }
 
 void Statistics::NewBatch()
@@ -59,12 +59,15 @@ void Statistics::NewBatch()
 
 void Statistics::Dump() const
 {
+  TestStats full = GetStats();
   auto stat = mStats[mBatchIndex];
   printf("=========================================\n");
   printf("The attacker won %u games and lost %u\n", stat->wins, stat->losses);
   printf("Entered %.0f and blocked %.0f doors \n", stat->doorsEntered, stat->doorsBlocked);
   printf("Calculated p value = %.6f\n", PValue(*stat));
   printf("Calculated q value = %.6f\n", QValue(*stat));
+  printf("Current mean = %.6f\n", full.mean);
+  printf("Current variance = %.6f\n", full.variance);
   printf("=========================================\n");
 }
 
@@ -110,6 +113,10 @@ bool Statistics::Save(const std::string& filename) const
 {
   auto now = std::chrono::system_clock::now();
   printf("Simulation done in %ld milliseconds\n", std::chrono::duration_cast<std::chrono::milliseconds>(now - mStart).count());
+
+  std::string dir = RemoveFilename(filename);
+  if (!DoesFileExist(dir))
+    CreateDirectory(dir);
 
   std::ofstream file(filename, std::ios::trunc);
   LOG_AND_RETURN_ON_FAILURE(file.is_open(), std::string("Could not open request file: " + filename).c_str());
