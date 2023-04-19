@@ -40,9 +40,12 @@
     { "x1": 414, "y1": 500, "x2": 448, "y2": 500}
   ],
   "attacker": {
-    "x": 200,
-    "y": 290,
-    "speed": 103.0,
+    "pos" :[
+      { "x": 150, "y": 180 },
+      { "x": 200, "y": 290 },
+      { "x": 340, "y": 340 }
+    ],
+    "speed": 100.0,
     "attack_speed": 0.1,
     "randomization": 0,
     "attack_period": 5,
@@ -89,7 +92,19 @@
       "x": 0.835,
       "y": 0.215,
       "type": "inter_level",
-      "direction": "left",
+      "direction": "top",
+      "inter_opening_time": 10,
+      "short_opening_probability": 0.95,
+      "max_open_time": 11,
+      "min_open_time": 10,
+      "max_short_open_time": 1.5,
+      "min_short_open_time": 0.5
+    },
+    {
+      "x": 0.647,
+      "y": 0.1,
+      "type": "inter_level",
+      "direction": "right",
       "inter_opening_time": 10,
       "short_opening_probability": 0.95,
       "max_open_time": 11,

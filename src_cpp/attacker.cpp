@@ -11,8 +11,9 @@ Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors
   // For rand() later
   srand (time(NULL));
 
-  mPos.x = config["x"];
-  mPos.y = config["y"];
+  int index = rand() % config["pos"].size();
+  mPos.x = config["pos"][index]["x"];
+  mPos.y = config["pos"][index]["y"];
   mSpeed = float(config["speed"]) * TILE_SIZE;
 
   SetColor(0, 0, 255);

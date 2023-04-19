@@ -26,8 +26,9 @@
     { "x1" : 85,  "y1": 127, "x2": 128, "y2": 127 }
   ],
   "attacker": {
-    "x": 50,
-    "y": 250,
+    "pos":[
+      {"x": 10, "y": 208 }
+    ],
     "speed": 0.005,
     "randomization": 0,
     "attack_period": 5,

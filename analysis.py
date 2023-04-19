@@ -45,7 +45,7 @@ def read_data(file):
 
   # Get second result because first is the level
   base = Path(file).stem
-  file_data["name"] = re.findall(r'\d+\.?\d*', base)[-1]
+  file_data["name"] = float(re.findall(r'\d+\.?\d*', base)[-1])
 
   with open(file, "r") as f:
     for i, line in enumerate(f.read().splitlines()):
