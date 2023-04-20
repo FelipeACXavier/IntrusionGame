@@ -17,6 +17,8 @@ public:
   float X() const;
   float Y() const;
 
+  Point Pos() const;
+
   void Update();
 
   DoorStats GetStats() const;

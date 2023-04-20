@@ -64,7 +64,11 @@ void Level::UpdateWalls() const
 
   SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
   for (auto& wall : mWalls)
+  {
+    // Uncomment to see the dead zones
+    // SDL_RenderFillRect(mRenderer, &wall.deadzone);
     SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
+  }
 }
 
 bool Level::CreateWalls(const nlohmann::json& config)

@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <memory>
 
 #include <argumentum/argparse.h>
@@ -108,12 +107,11 @@ int main (int argc, char **argv)
     }
     printf("Done with %u out of %u batches\n", i + 1, args.batches);
     stats.Dump();
-    game.reset();
   }
 
   printf("Done running %u simulations\n", args.batches * iterations);
 
-  std::string fileWithoutExtension = GetFilename(configFile);
+  std::string fileWithoutExtension = GetFilename(configFile) + GetDate();
   stats.Save(outDirectory + fileWithoutExtension + ".txt");
 
   observed = observed < 0.0 ? float(configs["observed_mean"]) : observed;

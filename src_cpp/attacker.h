@@ -16,7 +16,7 @@ public:
   Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Attacker();
 
-  void Move(float speed) override;
+  void Move(const Point& goal) override;
   void StartCheck() override;
 
   std::function<void()> mReachedDoor;
@@ -42,7 +42,7 @@ private:
     JUMP
   } mBehaviour;
 
-  float mAttackSpeed;
+  int mAttackSpeed;
 
   uint32_t mStayPeriod;
   uint32_t mStayTime;

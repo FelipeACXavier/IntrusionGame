@@ -17,19 +17,7 @@ Guard::Guard(uint32_t id, const nlohmann::json& config,
   // For rand() later
   srand (time(NULL));
 
-  bool ok;
-  do
-  {
-    ok = true;
-    mPos.x = mRandomWidth->Uniform();
-    mPos.y = mRandomHeight->Uniform();
-    for (const auto& wall : walls)
-    {
-      if (mPos.x > wall.deadzone.x && mPos.x < wall.deadzone.x + wall.deadzone.w &&
-          mPos.y > wall.deadzone.y && mPos.y < wall.deadzone.y + wall.deadzone.h)
-        ok = false;
-    }
-  } while (!ok);
+  mPos = GetRandomPoint();
 
   SetColor(255, 0, 0);
 
@@ -63,6 +51,9 @@ Guard::Guard(uint32_t id, const nlohmann::json& config,
   mWaitForMissionTime = intermission.Uniform();
 
   mMovablesPerCheck = uint32_t(config["entities_per_check"]);
+
+  mInitialPos.x = mPos.x;
+  mInitialPos.y = mPos.y;
 }
 
 Guard::~Guard()
@@ -82,7 +73,7 @@ void Guard::Update()
   // DrawCircle(mPos.x, mPos.y, mShowRadius);
 }
 
-void Guard::Move(float speed)
+void Guard::Move(const Point& goal)
 {
   if (mWaitForMissionTime > 0)
   {
@@ -115,10 +106,17 @@ void Guard::Move(float speed)
     mBeingChecked.clear();
   }
 
-  Movable::Move(mSpeed);
+  mState = State::ACTIVE;
 
-  if (mInMission)
-    PerformCheck();
+  Movable::Move(goal);
+
+  if (mState == State::IDLE)
+  {
+    if (mInMission)
+      PerformCheck();
+    else
+      mCheckTime = 30; // Stay 5 minutes in a location
+  }
 }
 
 void Guard::StartMission()
@@ -126,6 +124,7 @@ void Guard::StartMission()
   if (mInMission)
     return;
 
+  mCheckTime = 0;
   mInMission = true;
   mSpeed = mCheckSpeed;
   mMissionTime = mRandomMission->Uniform();
@@ -182,7 +181,8 @@ void Guard::PerformCheck()
 
 void Guard::ResetPosition()
 {
-
+  mPos.x = mInitialPos.x;
+  mPos.y = mInitialPos.y;
 }
 
 void Guard::RayCast(std::vector<PMovable>& checks)

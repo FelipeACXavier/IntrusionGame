@@ -43,7 +43,8 @@
       { "x": 10, "y": 100 },
       { "x": 10, "y": 300 }
     ],
-    "speed": 1.0,
+    "speed": 1,
+    "attack_speed": 1,
     "randomization": 0,
     "attack_period": 5,
     "stay_period": 0.5,
@@ -56,7 +57,7 @@
     "min_stay_time": 10,
     "randomization": 128,
     "behaviour": "walk",
-    "speed": 1.0
+    "speed": 1
   },
   "guards": {
     "number_of_guards": 3,
@@ -70,8 +71,8 @@
         "max_mission_time": 15,
         "min_mission_time": 5,
         "behaviour": "stroll",
-        "check_speed": 1.5,
-        "stroll_speed": 0.05
+        "check_speed": 1,
+        "stroll_speed": 1
       }
     ]
   },

@@ -13,7 +13,7 @@ public:
   Employee(uint32_t id, const nlohmann::json& config, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Employee();
 
-  void Move(float speed) override;
+  void Move(const Point& goal) override;
   void StopCheck() override;
 
 private:

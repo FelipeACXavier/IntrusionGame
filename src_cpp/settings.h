@@ -27,6 +27,11 @@ struct Point
     return x == p.x && y == p.y;
   }
 
+  bool operator!=(Point const& p)
+  {
+    return x != p.x || y != p.y;
+  }
+
   float x = 0;
   float y = 0;
 };
@@ -52,6 +57,31 @@ struct Line
   float c = 0.0;
 
   SDL_Rect deadzone;
+};
+
+class Cost
+{
+public:
+  Cost(){}
+
+  Cost(const Point& p1, const Point& p2)
+    : Cost(p1, p2, INT32_MAX, INT32_MAX, INT32_MAX)
+  {}
+
+  Cost(const Point& p1, const Point& p2, int g, int h, int f)
+    : p(p1)
+    , parent(p2)
+    , g(g)
+    , h(h)
+    , f(f)
+  {}
+
+  Point p;
+  Point parent;
+
+  int g = INT32_MAX;
+  int h = INT32_MAX;
+  int f = INT32_MAX;
 };
 
 struct DoorStats
