@@ -1,10 +1,12 @@
 # IntrusionGame
 
-There are two versions of the simulator available, a slow python version that only requires python >= 3.8 and the libraries installed and the C++ version which is only supported in Linux. The C++, as expected, is about 50 times faster than the python version (with the `--hidden` option).
+There are two versions of the simulator available, a slow python version that only requires python >= 3.8 and the libraries installed and the C++ version which is only supported in Linux. The C++, as expected, is about 50 times faster than the python version (with the `--hidden` option set).
 
 ---
 ## Python version
-Just run the main files as normal
+Just run the main files as normal.  
+
+**Note:** After the path finding and wall simulation, this version is very outdated, using the C++ version is highly recommended.
 ```
 python main.py
 ```
