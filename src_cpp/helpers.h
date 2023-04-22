@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "guard.h"
+
 #define RETURN_ON_FAILURE(c)             \
   do                                     \
   {                                      \
@@ -65,7 +67,7 @@ static std::string GetDate()
   auto tm = *std::localtime(&t);
 
   std::ostringstream oss;
-  oss << std::put_time(&tm, "_%Y%m%d_%H%M%S");
+  oss << std::put_time(&tm, "%Y%m%d_%H%M%S");
 
   return oss.str();
 }
@@ -152,8 +154,14 @@ static std::vector<Point> ToPoints(const std::vector<std::vector<Cost>>& map, co
   return points;
 }
 
-static std::vector<Point> PathFinding(const Point& start, const Point& end, const std::vector<Line>& lines)
+static std::vector<Point> PathFinding(const Point& start, const Point& end, const std::vector<Line>& lines, const std::vector<PGuard>& guards)
 {
+  for (const auto& guard : guards)
+  {
+    if (Distance(end.x, end.y, guard->X(), guard->Y()) <= guard->CheckRadius())
+      return std::vector<Point>();
+  }
+
   Point cp = ToWorld(start);
   Point cpEnd = ToWorld(end);
 
@@ -240,6 +248,12 @@ static std::vector<Point> PathFinding(const Point& start, const Point& end, cons
         int g = cost + Distance(pp.x, pp.y, p.x, p.y);
         int h = Distance(pp.x, pp.y, cpEnd.x, cpEnd.y);
 
+        for (const auto& guard : guards)
+        {
+          if (Distance(wpp.x, wpp.y, guard->X(), guard->Y()) <= guard->CheckRadius())
+            h += 200;
+        }
+
         // Check if the new cost is cheaper than the one current in the map
         if (map[pp.x][pp.y].f <= g + h)
           continue;
@@ -259,4 +273,9 @@ static std::vector<Point> PathFinding(const Point& start, const Point& end, cons
   return std::vector<Point>();
   // For debugging, it is easier to see the full explored closedList
   // return closedList;
+}
+
+static std::vector<Point> PathFinding(const Point& start, const Point& end, const std::vector<Line>& lines)
+{
+  return PathFinding(start, end, lines, std::vector<PGuard>());
 }

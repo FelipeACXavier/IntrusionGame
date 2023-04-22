@@ -105,6 +105,10 @@ struct Args
   uint32_t iterations = 1;
 
   bool hidden = false;
+
+  float value = FLT_MAX;
+  std::string parameter;
+  std::string entity;
 };
 
 struct Result

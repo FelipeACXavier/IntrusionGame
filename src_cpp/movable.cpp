@@ -7,7 +7,7 @@
 Movable::Movable(int x, int y, const std::vector<Line> walls, SDL_Renderer* renderer)
     : mRenderer(renderer)
     , mWalls(walls)
-    , mIsChecking(false)
+    , mIsChecking(-1)
     , mState(State::IDLE)
     , mSpeed(0)
 {
@@ -38,19 +38,26 @@ float Movable::Y() const
   return mPos.y;
 }
 
-void Movable::StartCheck()
+Point Movable::Pos() const
 {
-  mIsChecking = true;
+  return mPos;
 }
 
-void Movable::StopCheck()
+void Movable::StartCheck(int id)
 {
-  mIsChecking = false;
+  if (!IsChecking())
+    mIsChecking = id;
+}
+
+void Movable::StopCheck(int id)
+{
+  if (id == mIsChecking)
+    mIsChecking = -1;
 }
 
 bool Movable::IsChecking() const
 {
-  return mIsChecking;
+  return mIsChecking != -1;
 }
 
 void Movable::Constrain(float speed)
@@ -88,7 +95,8 @@ void Movable::Move(const Point& goal)
 
     mPos = *(mPoints.begin() + index);
 
-    DrawPoints();
+    if (!HIDDEN)
+      DrawPoints();
 
     mPoints.erase(mPoints.begin(), mPoints.begin() + index + 1);
 
@@ -105,9 +113,12 @@ void Movable::Update()
   if (HIDDEN)
     return;
 
-  SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
+  if (IsChecking())
+    SDL_SetRenderDrawColor(mRenderer, 255, 127, 80, 255);
+  else
+    SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
 
-  DrawCircle(mPos.x, mPos.y, HALF_TILE);
+  DrawCircle(mPos.x, mPos.y, 8);
 }
 
 Point Movable::GetRandomPoint() const

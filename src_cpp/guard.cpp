@@ -60,6 +60,11 @@ Guard::~Guard()
 {
 }
 
+float Guard::CheckRadius() const
+{
+  return mCheckRadius;
+}
+
 void Guard::Update()
 {
   Movable::Update();
@@ -99,24 +104,21 @@ void Guard::Move(const Point& goal)
 
   if (IsChecking())
   {
-    StopCheck();
-    for (auto& m : mBeingChecked)
-      m->StopCheck();
-
+    StopCheck(mId);
     mBeingChecked.clear();
   }
 
-  mState = State::ACTIVE;
+  // See if we can perform check on every employee is found on the guards way
+  if (mInMission)
+    PerformCheck();
 
+  mState = State::ACTIVE;
   Movable::Move(goal);
 
-  if (mState == State::IDLE)
-  {
-    if (mInMission)
-      PerformCheck();
-    else
-      mCheckTime = 30; // Stay 5 minutes in a location
-  }
+  // Wait a few minutes after position is reach
+  // Maybe have coffee and look around
+  if (!mInMission && mState == State::IDLE)
+    mCheckTime = 120; // 4 minutes
 }
 
 void Guard::StartMission()
@@ -132,8 +134,8 @@ void Guard::StartMission()
 
 void Guard::StopMission()
 {
-if (!mInMission)
-    return;
+  if (!mInMission)
+      return;
 
   mInMission = false;
   mSpeed = mStrollSpeed;
@@ -141,6 +143,12 @@ if (!mInMission)
 
   if (mBehaviour == Behaviour::RESET)
     ResetPosition();
+
+  // Make sure all entities which were being checked are now free to roam again
+  for (auto& m : mMovables)
+    m->StopCheck(mId);
+
+  mBeingChecked.clear();
 }
 
 void Guard::PerformCheck()
@@ -154,16 +162,20 @@ void Guard::PerformCheck()
     if (e->IsChecking())
       continue;
 
-    double dist = std::pow(X() - e->X(), 2) + std::pow(Y() - e->Y(), 2);
-    if (dist <= mCheckRadius)
+    // Guards only check entities within a certain radius
+    if (Distance(mPos.x, mPos.y, e->X(), e->Y()) >= mCheckRadius)
+      continue;
+
+    // Make sure we are not checking someone through a wall
+    Point min = Raycast(mPos, e->Pos(), mWalls);
+    if (min == e->Pos())
       possibleChecks.push_back(e);
   }
-
-  RayCast(possibleChecks);
 
   if (possibleChecks.empty())
     return;
 
+  // Of the possible checks, only a few are actually selected
   for (uint32_t i = 0; i < mMovablesPerCheck && !possibleChecks.empty(); ++i)
   {
     int index = rand() % possibleChecks.size();
@@ -171,9 +183,14 @@ void Guard::PerformCheck()
     possibleChecks.erase(possibleChecks.begin() + index);
   }
 
-  StartCheck();
+  StartCheck(mId);
   for (auto& e : mBeingChecked)
-    e->StartCheck();
+  {
+    if (e->IsChecking())
+      continue;
+
+    e->StartCheck(mId);
+  }
 
   // Get time to remain in place/checking
   mCheckTime = mRandomCheck->Uniform();
@@ -189,15 +206,12 @@ void Guard::RayCast(std::vector<PMovable>& checks)
 {
   for (auto iter = checks.begin(); iter < checks.end();)
   {
-    // for (int i = -1; i <= 1; ++i)
-    {
-      Point p((*iter)->X(), (*iter)->Y());
-      Point min = Raycast(mPos, p, mWalls);
+    Point p((*iter)->X(), (*iter)->Y());
+    Point min = Raycast(mPos, p, mWalls);
 
-      if (min == p)
-        iter++;
-      else
-        iter = checks.erase(iter);
-    }
+    if (min == p)
+      iter++;
+    else
+      iter = checks.erase(iter);
   }
 }

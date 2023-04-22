@@ -20,6 +20,8 @@ public:
 
   void Update() override;
 
+  float CheckRadius() const;
+
 private:
   uint32_t mId;
   int mCheckSpeed;

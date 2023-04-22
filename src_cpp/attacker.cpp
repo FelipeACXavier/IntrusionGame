@@ -49,12 +49,18 @@ Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors
 
 Attacker::~Attacker()
 {
+  mGuards.clear();
 }
 
-void Attacker::StartCheck()
+void Attacker::StartCheck(int /* id */)
 {
   if (mWasCaught)
     mWasCaught();
+}
+
+void Attacker::SetGuards(const std::vector<PGuard>& guards)
+{
+  mGuards = guards;
 }
 
 void Attacker::SelectDoor()
@@ -131,7 +137,11 @@ void Attacker::Move(const Point& goal)
   }
   else
   {
-    Movable::Move(goal);
+    // Take guard locations into account and try to avoid them
+    if (mPoints.empty())
+      mPoints = PathFinding(mPos, goal, mWalls, mGuards);
+    else
+      Movable::Move(goal);
   }
 
   if (mStaying && mState == State::IDLE)

@@ -43,14 +43,3 @@ void Employee::Move(const Point& goal)
   if (mState == State::IDLE)
     mWaitTime = mRandomWait->Uniform();
 }
-
-void Employee::StopCheck()
-{
-  Movable::StopCheck();
-
-  // Move away from the guard check radius
-  if (mBehaviour == Behaviour::WALK)
-    Movable::Move(GetRandomPoint());
-
-  // mWaitTime = 0
-}

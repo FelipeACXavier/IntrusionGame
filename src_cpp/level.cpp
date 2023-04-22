@@ -24,19 +24,21 @@ bool Level::Init(const nlohmann::json& config)
   LOG_AND_RETURN_ON_FAILURE(CreateEmployees(config["employees"], mRenderer), "Failed to create employees");
   LOG_AND_RETURN_ON_FAILURE(CreateGuards(config["guards"], mRenderer), "Failed to create guards");
 
+  mAttacker->SetGuards(mGuards);
+
   return true;
 }
 
 bool Level::Run()
 {
+  for (auto& guard : mGuards)
+    guard->Update();
+
   for (auto& employee : mEmployees)
     employee->Update();
 
   for (auto& door : mDoors)
     door->Update();
-
-  for (auto& guard : mGuards)
-    guard->Update();
 
   mAttacker->Update();
 

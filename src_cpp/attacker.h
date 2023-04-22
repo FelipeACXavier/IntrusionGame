@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "door.h"
+#include "guard.h"
 #include "movable.h"
 #include "randomizer.h"
 
@@ -17,7 +18,9 @@ public:
   ~Attacker();
 
   void Move(const Point& goal) override;
-  void StartCheck() override;
+  void StartCheck(int id) override;
+
+  void SetGuards(const std::vector<PGuard>& guards);
 
   std::function<void()> mReachedDoor;
   std::function<void()> mWasCaught;
@@ -48,6 +51,8 @@ private:
   uint32_t mStayTime;
   uint32_t mWaitTime;
   uint32_t mAttackPeriod;
+
+  std::vector<PGuard> mGuards;
 
   void SelectDoor();
   void ResetPosition();

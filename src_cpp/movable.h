@@ -19,9 +19,10 @@ public:
 
   float X() const;
   float Y() const;
+  Point Pos() const;
 
-  virtual void StartCheck();
-  virtual void StopCheck();
+  virtual void StartCheck(int id);
+  virtual void StopCheck(int id);
 
   bool IsChecking() const;
 
@@ -57,7 +58,7 @@ protected:
   void DrawPoints();
 
 private:
-  bool mIsChecking;
+  int mIsChecking;
 };
 
 typedef std::shared_ptr<Movable> PMovable;

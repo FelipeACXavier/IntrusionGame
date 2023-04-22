@@ -14,7 +14,6 @@ public:
   ~Employee();
 
   void Move(const Point& goal) override;
-  void StopCheck() override;
 
 private:
   uint32_t mId;
