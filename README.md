@@ -39,3 +39,9 @@ Some of the parameters can be overridden with the command line. These options ar
 To make running multiple simulations with different parameters, the `run.sh` file is provided. This simple bash script gives an example of how multiple simulations with different parameters can be run.  
 
 Currently only one parameter of the config file can be updated, if more changes are needed multiple config files can be used.
+
+---
+## Improvements
+
+- Make guards aware of attackers the longer they stay in the room.
+- Can we parallelize this??
