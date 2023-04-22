@@ -10,34 +10,7 @@ from sys import exit
 from pathlib import Path
 from matplotlib.backends.backend_pdf import PdfPages
 
-
-parser = argparse.ArgumentParser(
-                    prog='IntrusionGame',
-                    description="""Simulates a specified intrusion game based on the \"Physical Intrusion
-                                   Games—Optimizing Surveillance by Simulation and Game Theory\" paper""",
-                    epilog='For research purpose only, see: https://github.com/FelipeACXavier/IntrusionGame')
-
-parser.add_argument('-l', dest="level", default=0, help="Specify the level", type=str)
-parser.add_argument('-t', dest="title", default=None, help="Title, i.e. parameter used", type=str)
-parser.add_argument('-d', dest="dir", default=None, help="Folder where data is located", type=str)
-
-args = parser.parse_args()
-if args.level not in ["11", "12", "2", "3"]:
-    print("Invalid level selected")
-    exit()
-
-if not args.title:
-  print("No title given")
-  exit()
-
-if not args.dir:
-  print("No folder given")
-  exit()
-
-level = args.level
-subtitle = args.title
-data_folder = args.dir
-name = "level_" + str(level)
+import csv
 
 def read_data(file):
   file_data = {"mean" : 0.0, "var": 0.0, "data": [], "name": 0}
@@ -86,6 +59,84 @@ def get_plot(x, y, axis, x_label):
   axis.set_xlabel(x_label)
   axis.set_ylabel('Q value')
   axis.set_title('{} vs Q value'.format(x_label))
+
+def get_heatmap(dir):
+  index = 0
+  bins = {
+    "L11": (8, 12),
+    "L12": (8, 18),
+    "L2": (16, 31),
+    "L3": (28, 40)
+  }
+
+  pdf = PdfPages(dir + "heatmap.pdf")
+  for file in os.listdir(dir):
+    if not file.endswith(".csv"):
+      continue
+
+    x = []
+    y = []
+
+    base = Path(file).stem
+    level = base.split('_')[0]
+    bin = bins[level]
+
+    with open(dir + file, newline='') as csvfile:
+      spamreader = csv.reader(csvfile, delimiter=',')
+      for row in spamreader:
+        x.append(int(row[0]) / 32)
+        y.append(int(row[1]) / 32)
+
+    print("There are {} points in {}".format(len(x), level))
+
+    heatmap, xedges, yedges = np.histogram2d(x, y, bins=bin)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+
+    fig = plt.figure(index, figsize=(10, 10))
+    axis = fig.add_subplot(1,1,1)
+    index += 1
+
+    axis.set_title('{}'.format(base))
+    axis.imshow(heatmap.T, extent=extent, origin='lower')
+    axis.invert_yaxis()
+
+    pdf.savefig(figure=fig)
+
+  pdf.close()
+
+
+parser = argparse.ArgumentParser(
+                    prog='IntrusionGame',
+                    description="""Simulates a specified intrusion game based on the \"Physical Intrusion
+                                   Games—Optimizing Surveillance by Simulation and Game Theory\" paper""",
+                    epilog='For research purpose only, see: https://github.com/FelipeACXavier/IntrusionGame')
+
+parser.add_argument('-l', dest="level", default=0, help="Specify the level", type=str)
+parser.add_argument('-t', dest="title", default=None, help="Title, i.e. parameter used", type=str)
+parser.add_argument('-d', dest="dir", default=None, help="Folder where data is located", type=str)
+parser.add_argument('--heatmap', dest="heatmap", default=False, action='store_true', help="Generate heatmap from csv files in dir")
+
+args = parser.parse_args()
+if not args.dir:
+  print("No folder given")
+  exit()
+
+if args.heatmap:
+  get_heatmap(args.dir)
+  exit()
+
+if args.level not in ["11", "12", "2", "3"]:
+    print("Invalid level selected")
+    exit()
+
+if not args.title:
+  print("No title given")
+  exit()
+
+level = args.level
+subtitle = args.title
+data_folder = args.dir
+name = "level_" + str(level)
 
 # =====================================================================
 # Get data from all files
