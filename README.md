@@ -34,3 +34,8 @@ The `intrusion_game` executable is then created.
 The simulator can be used with a JSON configuration file like the one below, all options need to be present, there are no "default" values.  
   
 Some of the parameters can be overridden with the command line. These options are available in both versions and can be accessed with the `--help` option.
+
+## "Automatic" testing
+To make running multiple simulations with different parameters, the `run.sh` file is provided. This simple bash script gives an example of how multiple simulations with different parameters can be run.  
+
+Currently only one parameter of the config file can be updated, if more changes are needed multiple config files can be used.
