@@ -6,20 +6,26 @@
 
 Movable::Movable(int x, int y, const std::vector<Line> walls, SDL_Renderer* renderer)
     : mRenderer(renderer)
-    , mIsChecking(false)
     , mWalls(walls)
+    , mIsChecking(-1)
+    , mState(State::IDLE)
+    , mSpeed(0)
 {
 
   mPos.x = x;
   mPos.y = y;
 
   mRandom = std::make_unique<Randomizer>(-1, 1);
-  mRandomWidth = std::make_unique<Randomizer>(0, WIDTH);
-  mRandomHeight = std::make_unique<Randomizer>(0, HEIGHT);
+  mRandomWidth = std::make_unique<Randomizer>(1, WIDTH - 1);
+  mRandomHeight = std::make_unique<Randomizer>(1, HEIGHT - 1);
+
+  mDir.x = mRandom->Uniform();
+  mDir.y = mRandom->Uniform();
 }
 
 Movable::~Movable()
 {
+  mPoints.clear();
 }
 
 float Movable::X() const
@@ -32,19 +38,26 @@ float Movable::Y() const
   return mPos.y;
 }
 
-void Movable::StartCheck()
+Point Movable::Pos() const
 {
-  mIsChecking = true;
+  return mPos;
 }
 
-void Movable::StopCheck()
+void Movable::StartCheck(int id)
 {
-  mIsChecking = false;
+  if (!IsChecking())
+    mIsChecking = id;
+}
+
+void Movable::StopCheck(int id)
+{
+  if (id == mIsChecking)
+    mIsChecking = -1;
 }
 
 bool Movable::IsChecking() const
 {
-  return mIsChecking;
+  return mIsChecking != -1;
 }
 
 void Movable::Constrain(float speed)
@@ -61,36 +74,73 @@ void Movable::Constrain(float speed)
     mPos.y = HALF_TILE;
 }
 
-void Movable::Move(float speed)
+void Movable::Move(const Point& goal)
 {
   if (IsChecking())
     return;
 
-  mDir.x = mRandom->Uniform();
-  mDir.y = mRandom->Uniform();
+  if (mState == State::IDLE)
+    return;
 
-  Point newPos(mPos.x + (mDir.x * speed), mPos.y + (mDir.y * speed));
-  Point minPoint = Raycast(mPos, newPos, mWalls);
-
-  if (minPoint == newPos)
+  if (mPoints.empty())
   {
-    mPos = newPos;
+    if (ToWorld(goal) != ToWorld(mPos))
+      mPoints = PathFinding(mPos, goal, mWalls);
   }
+  else
+  {
+    int index = 0;
+    if (mPoints.size() > mSpeed)
+      index = mSpeed;
 
-  Constrain(speed);
+    mPos = *(mPoints.begin() + index);
+
+    if (!HIDDEN)
+      DrawPoints();
+
+    mPoints.erase(mPoints.begin(), mPoints.begin() + index + 1);
+
+    // Only allow other behaviours once entity is in position
+    if (mPoints.empty())
+      mState = State::IDLE;
+  }
 }
 
 void Movable::Update()
 {
-  Move(mSpeed);
+  Move(GetRandomPoint());
 
   if (HIDDEN)
     return;
 
-  SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
-  // SDL_RenderDrawPoint(mRenderer, mPos.x, mPos.y);
+  if (IsChecking())
+    SDL_SetRenderDrawColor(mRenderer, 255, 127, 80, 255);
+  else
+    SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
 
-  DrawCircle(mPos.x, mPos.y, HALF_TILE);
+  DrawCircle(mPos.x, mPos.y, 8);
+}
+
+Point Movable::GetRandomPoint() const
+{
+  bool ok;
+  Point pos;
+
+  do
+  {
+    ok = true;
+    pos.x = mRandomWidth->Uniform();
+    pos.y = mRandomHeight->Uniform();
+    for (const auto& wall : mWalls)
+    {
+      SDL_Rect d = wall.deadzone;
+      if (pos.x >= d.x && pos.x <= d.x + d.w &&
+          pos.y >= d.y && pos.y <= d.y + d.h)
+        ok = false;
+    }
+  } while (!ok);
+
+  return pos;
 }
 
 void Movable::SetColor(uint8_t r, uint8_t g, uint8_t b)
@@ -98,6 +148,19 @@ void Movable::SetColor(uint8_t r, uint8_t g, uint8_t b)
   mColor.r = r;
   mColor.g = g;
   mColor.b = b;
+}
+
+void Movable::DrawPoints()
+{
+  SDL_SetRenderDrawColor(mRenderer, mColor.r, mColor.g, mColor.b, 255);
+
+  for (int i = 1; i < mPoints.size(); ++i)
+  {
+    auto p1 = mPoints.at(i - 1);
+    auto p2 = mPoints.at(i);
+    DrawCircle(p1.x, p1.y, 3);
+    SDL_RenderDrawLine(mRenderer, p1.x, p1.y, p2.x, p2.y);
+  }
 }
 
 void Movable::DrawCircle(int32_t centreX, int32_t centreY, int32_t radius)

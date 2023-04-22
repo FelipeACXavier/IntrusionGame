@@ -20,10 +20,14 @@ public:
 
   void Update() override;
 
+  float CheckRadius() const;
+
 private:
   uint32_t mId;
-  float mCheckSpeed;
-  float mStrollSpeed;
+  int mCheckSpeed;
+  int mStrollSpeed;
+
+  Point mInitialPos;
 
   std::vector<PMovable> mMovables;
   std::vector<PMovable> mBeingChecked;
@@ -47,7 +51,7 @@ private:
     RESET
   } mBehaviour;
 
-  void Move(float speed) override;
+  void Move(const Point& goal) override;
 
   void StartMission();
   void StopMission();

@@ -17,7 +17,7 @@ public:
   void UpdateStats(uint32_t iteration, Result result);
 
   void NewBatch();
-  void Dump() const;
+  void Dump();
 
   bool Save(const std::string& filename) const;
 
@@ -71,6 +71,4 @@ private:
 
   float PValue(const GameStats& stat) const;
   float QValue(const GameStats& stat) const;
-
-  void IterationDone(uint32_t iteration, const GameStats& stat);
 };

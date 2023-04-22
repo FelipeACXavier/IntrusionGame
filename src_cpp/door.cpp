@@ -45,6 +45,11 @@ float Door::Y() const
   return mPos.y;
 }
 
+Point Door::Pos() const
+{
+  return mPos;
+}
+
 DoorStats Door::GetStats() const
 {
   return mStats;
@@ -52,20 +57,21 @@ DoorStats Door::GetStats() const
 
 void Door::CreateArea(const std::string& direction)
 {
+  if (mPos.x + HALF_TILE >= WIDTH)
+    mPos.x -= HALF_TILE;
+  else if (mPos.x - HALF_TILE <= 0)
+    mPos.x += HALF_TILE;
+
+  if (mPos.y + HALF_TILE >= HEIGHT)
+    mPos.y -= HALF_TILE;
+  else if (mPos.y - HALF_TILE <= 0)
+    mPos.y += HALF_TILE;
+
   mRect.x = mPos.x - HALF_TILE;
   mRect.y = mPos.y - HALF_TILE;
   mRect.w = TILE_SIZE;
   mRect.h = TILE_SIZE;
 
-  if (mPos.x + HALF_TILE >= WIDTH)
-    mRect.x -= TILE_SIZE / 2;
-  else if (mPos.x - HALF_TILE <= 0)
-    mRect.x += TILE_SIZE / 2;
-
-  if (mPos.y + HALF_TILE >= HEIGHT)
-    mRect.y -= TILE_SIZE / 2;
-  else if (mPos.y - HALF_TILE <= 0)
-    mRect.y += TILE_SIZE / 2;
 }
 
 bool Door::Enter()

@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.5.1)
 # Define project name
 project(intrusion_game VERSION 1.0)
 
+# Optimise for speed
+# TODO: O3 crashes the program
+add_compile_options(-Os)
+
 set(EXEC intrusion_game)
 set(ARGUMENTUM_BUILD_STATIC_LIBS ON)
 add_subdirectory(src_cpp/argumentum)

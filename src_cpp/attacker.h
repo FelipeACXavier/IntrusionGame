@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "door.h"
+#include "guard.h"
 #include "movable.h"
 #include "randomizer.h"
 
@@ -16,8 +17,10 @@ public:
   Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, const std::vector<Line> walls, SDL_Renderer* renderer);
   ~Attacker();
 
-  void Move(float speed) override;
-  void StartCheck() override;
+  void Move(const Point& goal) override;
+  void StartCheck(int id) override;
+
+  void SetGuards(const std::vector<PGuard>& guards);
 
   std::function<void()> mReachedDoor;
   std::function<void()> mWasCaught;
@@ -42,12 +45,14 @@ private:
     JUMP
   } mBehaviour;
 
-  float mAttackSpeed;
+  int mAttackSpeed;
 
   uint32_t mStayPeriod;
   uint32_t mStayTime;
   uint32_t mWaitTime;
   uint32_t mAttackPeriod;
+
+  std::vector<PGuard> mGuards;
 
   void SelectDoor();
   void ResetPosition();

@@ -24,19 +24,21 @@ bool Level::Init(const nlohmann::json& config)
   LOG_AND_RETURN_ON_FAILURE(CreateEmployees(config["employees"], mRenderer), "Failed to create employees");
   LOG_AND_RETURN_ON_FAILURE(CreateGuards(config["guards"], mRenderer), "Failed to create guards");
 
+  mAttacker->SetGuards(mGuards);
+
   return true;
 }
 
 bool Level::Run()
 {
+  for (auto& guard : mGuards)
+    guard->Update();
+
   for (auto& employee : mEmployees)
     employee->Update();
 
   for (auto& door : mDoors)
     door->Update();
-
-  for (auto& guard : mGuards)
-    guard->Update();
 
   mAttacker->Update();
 
@@ -64,7 +66,11 @@ void Level::UpdateWalls() const
 
   SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
   for (auto& wall : mWalls)
+  {
+    // Uncomment to see the dead zones
+    // SDL_RenderFillRect(mRenderer, &wall.deadzone);
     SDL_RenderDrawLine(mRenderer, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
+  }
 }
 
 bool Level::CreateWalls(const nlohmann::json& config)

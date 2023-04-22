@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <memory>
 
 #include <argumentum/argparse.h>
@@ -62,6 +61,18 @@ int main (int argc, char **argv)
   params.add_parameter(args.hidden, "--hidden")
     .absent(false)
     .help("Do not show display when simulating");
+  params.add_parameter(args.parameter, "--chg-param")
+    .nargs(1)
+    .absent("")
+    .help("Overwrite this parameter in chg-entity");
+  params.add_parameter(args.entity, "--chg-entity")
+    .nargs(1)
+    .absent("")
+    .help("Overwrite chg-param in entity");
+  params.add_parameter(args.value, "--chg-value")
+    .nargs(1)
+    .absent(FLT_MAX)
+    .help("Overwrite chg-param in chg-entity to this value");
 
   if (!parser.parse_args(argc, argv, 1))
   {
@@ -86,10 +97,39 @@ int main (int argc, char **argv)
   bool running = true;
   uint32_t iterations = args.iterations > 0 ? args.iterations : uint32_t(configs["iterations"]);
 
-  std::cout << "Running game with config: " << configFile << std::endl;
-  std::cout << "Test type: " << configs["test_type"] << std::endl;
-  std::cout << "Observed value: " << configs["observed_mean"]<< std::endl;
-  std::cout << "Running " << args.batches << " batches and " <<  iterations << " iterations" << std::endl;
+  if (!args.entity.empty() && !args.parameter.empty())
+  {
+    printf("Overwriting %s in %s to %.2f\n", args.parameter.c_str(), args.entity.c_str(), args.value);
+    try
+    {
+      if (args.entity == "guards")
+      {
+        if (args.parameter == "number_of_guards")
+        {
+          configs[args.entity][args.parameter] = args.value;
+        }
+        else
+        {
+          for (auto& c : configs[args.entity]["config"])
+            c[args.parameter] = args.value;
+        }
+      }
+      else
+      {
+        configs[args.entity][args.parameter] = args.value;
+      }
+    }
+    catch (const std::exception& e)
+    {
+      printf("Error: %s\n", e.what());
+      return -1;
+    }
+  }
+
+  printf("Running game with config: %s\n", configFile.c_str());
+  printf("Test type: %s\n", std::string(configs["test_type"]).c_str());
+  printf("Observed value: %.6f\n", float(configs["observed_mean"]));
+  printf("Running %u batches and %u iterations\n", args.batches, iterations);
 
   Statistics stats(configs["test_type"], args.batches, iterations);
 
@@ -108,12 +148,11 @@ int main (int argc, char **argv)
     }
     printf("Done with %u out of %u batches\n", i + 1, args.batches);
     stats.Dump();
-    game.reset();
   }
 
   printf("Done running %u simulations\n", args.batches * iterations);
 
-  std::string fileWithoutExtension = GetFilename(configFile);
+  std::string fileWithoutExtension = GetFilename(configFile) + "_" + (args.value == FLT_MAX ? GetDate() : std::to_string(int(args.value)));
   stats.Save(outDirectory + fileWithoutExtension + ".txt");
 
   observed = observed < 0.0 ? float(configs["observed_mean"]) : observed;

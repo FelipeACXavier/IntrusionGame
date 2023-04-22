@@ -5,6 +5,7 @@ __pycache__/
 
 # This damn vscode folder...
 .vscode/
+*.pdf
 
 # C extensions
 *.so

@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "helpers.h"
+
 Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors, const std::vector<Line> walls, SDL_Renderer* renderer)
   : Movable(0, 0, walls, renderer)
   , mDoors(doors)
@@ -14,7 +16,7 @@ Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors
   int index = rand() % config["pos"].size();
   mPos.x = config["pos"][index]["x"];
   mPos.y = config["pos"][index]["y"];
-  mSpeed = float(config["speed"]) * TILE_SIZE;
+  mSpeed = int(config["speed"]) - 1;
 
   SetColor(0, 0, 255);
 
@@ -37,7 +39,7 @@ Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors
   else
     throw std::runtime_error("Attacker strategy is invalid");
 
-  mAttackSpeed = config.contains("attack_speed") ? float(config["attack_speed"]) : mSpeed;
+  mAttackSpeed = config.contains("attack_speed") ? int(config["attack_speed"]) - 1 : mSpeed;
 
   mStayPeriod = float(config["stay_period"]) * 60;
   mAttackPeriod = float(config["attack_period"]) * 60;
@@ -47,12 +49,18 @@ Attacker::Attacker(const nlohmann::json& config, const std::vector<PDoor>& doors
 
 Attacker::~Attacker()
 {
+  mGuards.clear();
 }
 
-void Attacker::StartCheck()
+void Attacker::StartCheck(int /* id */)
 {
   if (mWasCaught)
     mWasCaught();
+}
+
+void Attacker::SetGuards(const std::vector<PGuard>& guards)
+{
+  mGuards = guards;
 }
 
 void Attacker::SelectDoor()
@@ -63,13 +71,15 @@ void Attacker::SelectDoor()
   if (mDoors.empty())
     return;
 
+  mPoints.clear();
+
   int index = rand() % mDoors.size();
   mSelectedDoor = mDoors.at(index);
 }
 
 void Attacker::ResetPosition()
 {
-  Movable::Move(mSpeed);
+  Movable::Move(GetRandomPoint());
 
   mStaying = true;
   mCanAttack = false;
@@ -80,7 +90,7 @@ void Attacker::ResetPosition()
   mStayTime = mStayPeriod;
 }
 
-void Attacker::Move(float speed)
+void Attacker::Move(const Point& goal)
 {
   // Count time until we try to attack
   if (mWaitTime > 0)
@@ -93,7 +103,7 @@ void Attacker::Move(float speed)
     mStaying = false;
   }
 
-  if (mStayTime > 0)
+  if (mStaying && mStayTime > 0)
   {
     --mStayTime;
     return;
@@ -101,53 +111,39 @@ void Attacker::Move(float speed)
 
   SelectDoor();
 
+  mState = State::ACTIVE;
+
   if (mSelectedDoor && mCanAttack)
   {
-    float dX = (mSelectedDoor->X() - X());
-    float dY = (mSelectedDoor->Y() - Y());
-
-    if (std::abs(dX) > HALF_TILE || std::abs(dY) > HALF_TILE)
+    if (ToWorld(mPos) != ToWorld(mSelectedDoor->Pos()))
     {
-      if (mBehaviour == Behaviour::WALK)
-      {
-        mDir.x = dX;
-        mDir.y = dY;
-
-        mPos.x += mDir.x * mAttackSpeed;
-        mPos.y += mDir.y * mAttackSpeed;
-      }
-      else
-      {
-        mPos.x = mSelectedDoor->X();
-        mPos.y = mSelectedDoor->Y();
-      }
+      Movable::Move(mSelectedDoor->Pos());
     }
     else
     {
       if (mSelectedDoor->Enter())
       {
-        if (mStrategy == Strategy::P_TEST)
-          ResetPosition();
-        else if (mReachedDoor)
+        if (mStrategy != Strategy::P_TEST)
           mReachedDoor();
-      }
-      else
-      {
-        if (mStrategy == Strategy::P_TEST)
-          ResetPosition();
       }
 
       mStaying = true;
       mCanAttack = false;
       mSelectedDoor = nullptr;
       mWaitTime = mAttackPeriod;
+
+      mState = State::IDLE;
     }
   }
   else
   {
-    Movable::Move(mSpeed);
+    // Take guard locations into account and try to avoid them
+    if (mPoints.empty())
+      mPoints = PathFinding(mPos, goal, mWalls, mGuards);
+    else
+      Movable::Move(goal);
   }
 
-  if (mStaying)
+  if (mStaying && mState == State::IDLE)
     mStayTime = mStayPeriod;
 }

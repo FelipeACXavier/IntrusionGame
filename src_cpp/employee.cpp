@@ -5,24 +5,7 @@ Employee::Employee(uint32_t id, const nlohmann::json& config, const std::vector<
     , mId(id)
     , mWaitTime(0)
 {
-  bool ok;
-  do
-  {
-    ok = true;
-    mPos.x = mRandomWidth->Uniform();
-    mPos.y = mRandomHeight->Uniform();
-    for (const auto& wall : walls)
-    {
-      if (mPos.x > wall.deadzone.x && mPos.x < wall.deadzone.x + wall.deadzone.w &&
-          mPos.y > wall.deadzone.y && mPos.y < wall.deadzone.y + wall.deadzone.h)
-        ok = false;
-    }
-  } while (!ok);
-
-  // mPos.x = mRandomWidth->Uniform();
-  // mPos.y = mRandomHeight->Uniform();
-
-  mSpeed = float(config["speed"]) * TILE_SIZE;
+  mPos = GetRandomPoint();
 
   SetColor(0, 120, 50);
 
@@ -37,8 +20,6 @@ Employee::Employee(uint32_t id, const nlohmann::json& config, const std::vector<
   float maxStayTime = float(config["max_stay_time"]) * 60;
   float minStayTime = float(config["min_stay_time"]) * 60;
 
-  mSpeed = float(config["speed"]) * TILE_SIZE;
-
   mRandomWait = std::make_unique<Randomizer>(minStayTime, maxStayTime);
 }
 
@@ -46,7 +27,7 @@ Employee::~Employee()
 {
 }
 
-void Employee::Move(float speed)
+void Employee::Move(const Point& goal)
 {
   if (mWaitTime)
   {
@@ -54,19 +35,11 @@ void Employee::Move(float speed)
     return;
   }
 
-  Movable::Move(speed);
+  mState = State::ACTIVE;
+
+  Movable::Move(goal);
 
   // Wait after every move
-  mWaitTime = mRandomWait->Uniform();
-}
-
-void Employee::StopCheck()
-{
-  Movable::StopCheck();
-
-  // Move away from the guard check radius
-  if (mBehaviour == Behaviour::WALK)
-    Movable::Move(5 * mSpeed);
-
-  // mWaitTime = 0
+  if (mState == State::IDLE)
+    mWaitTime = mRandomWait->Uniform();
 }
